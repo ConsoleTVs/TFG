@@ -1,8 +1,9 @@
 type
     Tokens* = enum
         # Single-character tokens.
-        LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
-        COMMA, DOT, MINUS, PLUS, SEMICOLON, SLASH, STAR,
+        LEFT_PAREN, RIGHT_PAREN,
+        COMMA, DOT, COLON,
+        MINUS, PLUS, SLASH, STAR,
 
         # One or two character tokens.
         BANG, BANG_EQUAL,
@@ -11,18 +12,16 @@ type
         LESS, LESS_EQUAL,
 
         # Literals.
-        IDENTIFIER, STRING, NUMBER,
+        IDENTIFIER, TEXT, NUMBER,
 
         # Keywords.
-        AND, CLASS, ELSE, FALSE, FUN, FOR, IF, NIL, OR,
-        PRINT, RETURN, SUPER, THIS, TRUE, VAR, WHILE,
+        AND, OR, TRUE, FALSE, ACTION, IF, ELSE,
+        NONE, RETURN, FOR, WHILE, SHOW,
 
         EOF
 
     Token* = object of RootObj
-        tType*: Tokens
-        tLexeme*: string
-        tLine*: int
-
-proc `$`*(token: Token): string =
-    return "TOKEN(" & $token.tType & ", " & token.tLexeme & ": " & $token.tLine & ")"
+        kind*: Tokens
+        lexeme*: string
+        value*: string
+        line*: int

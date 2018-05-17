@@ -1,3 +1,5 @@
-(())
-as
-d
+// Sample line comment
+action operation(argument):
+    return (12 + 3) * argument.
+
+show operation(2),
