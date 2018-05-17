@@ -1,5 +1,5 @@
 type
-    tokens* = enum
+    Tokens* = enum
         # Single-character tokens.
         LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
         COMMA, DOT, MINUS, PLUS, SEMICOLON, SLASH, STAR,
@@ -20,9 +20,9 @@ type
         EOF
 
     Token* = object of RootObj
-        tType*: tokens
+        tType*: Tokens
         tLexeme*: string
-        line*: int
+        tLine*: int
 
 proc `$`*(token: Token): string =
-    return "TOKEN(" & $token.tType & ", " & token.tLexeme & ": " & $token.line & ")"
+    return "TOKEN(" & $token.tType & ", " & token.tLexeme & ": " & $token.tLine & ")"
