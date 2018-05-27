@@ -2,7 +2,7 @@ type
     Tokens* = enum
         # Single-character tokens.
         LEFT_PAREN, RIGHT_PAREN,
-        COMMA, DOT, COLON,
+        COMMA, DOT, COLON, SEMICOLON
         MINUS, PLUS, SLASH, STAR,
 
         # One or two character tokens.

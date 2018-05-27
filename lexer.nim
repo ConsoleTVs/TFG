@@ -25,7 +25,7 @@ proc isAtEnd(lexer: Lexer): bool =
     return lexer.current >= lexer.source.len
 
 proc advance(lexer: var Lexer): char =
-    lexer.current += 1
+    lexer.current.inc # Increment the current index
     return lexer.source[lexer.current - 1]
 
 proc peek(lexer: Lexer, offset: int = 0): char =
@@ -36,7 +36,7 @@ proc peek(lexer: Lexer, offset: int = 0): char =
 proc match(lexer: var Lexer, expected: char): bool =
     if lexer.isAtEnd or lexer.source[lexer.current] != expected:
         return false
-    lexer.current += 1
+    lexer.current.inc # Increment the current index
     return true
 
 proc addToken(lexer: var Lexer, token: Tokens, value: string = nil) =
@@ -52,7 +52,7 @@ proc text(lexer: var Lexer) =
         # It can be a multi-line text, so be sure to increment
         # the line number if needed
         if lexer.peek() == '\n':
-            lexer.line += 1
+            lexer.line.inc # Increment the current line
         discard lexer.advance
     # Check if we reached the end of the file
     if lexer.isAtEnd:
@@ -74,7 +74,7 @@ proc identifier(lexer: var Lexer) =
     while lexer.peek.isAlphaNumeric:
         discard lexer.advance
     var text = lexer.source[lexer.start..lexer.current - 1]
-    if (keywords.hasKey(text)):
+    if keywords.hasKey(text):
         lexer.addToken(keywords[text])
     else:
         lexer.addToken(IDENTIFIER)
@@ -92,6 +92,27 @@ proc scanToken(lexer: var Lexer) =
         of '-': lexer.addToken(MINUS)
         of '*': lexer.addToken(STAR)
         of ':': lexer.addToken(COLON)
+        of ';': lexer.addToken(SEMICOLON)
+        of '=':
+            if lexer.match('='):
+                lexer.addToken(EQUAL_EQUAL)
+            else:
+                lexer.addToken(EQUAL)
+        of '!':
+            if lexer.match('='):
+                lexer.addToken(BANG_EQUAL)
+            else:
+                lexer.addToken(BANG)
+        of '<':
+            if lexer.match('='):
+                lexer.addToken(LESS_EQUAL)
+            else:
+                lexer.addToken(LESS)
+        of '>':
+            if lexer.match('='):
+                lexer.addToken(GREATER_EQUAL)
+            else:
+                lexer.addToken(GREATER)
         of '/':
             if lexer.match('/'):
                 # There's an inline comment
@@ -100,7 +121,7 @@ proc scanToken(lexer: var Lexer) =
                     discard lexer.advance
             else:
                 lexer.addToken(SLASH)
-        of '\n': lexer.line += 1
+        of '\n': lexer.line.inc # Increment the current line
         of ' ', '\r', '\t': discard
         else:
             if c.isDigit:

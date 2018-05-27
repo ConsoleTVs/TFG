@@ -1,12 +1,15 @@
-import parseopt, lexer
+import parseopt, lexer, parser, rules
 
 proc run(source: string) =
     # The magic starts here
     var
         lexer = Lexer(source: source)
         tokens = lexer.scan
+        parser = Parser(tokens: tokens)
     for token in tokens:
-        echo $token
+        echo token
+    var expression = parser.parse
+    echo $expression
 
 proc prompt() =
     echo "Promp not yet done :c"
