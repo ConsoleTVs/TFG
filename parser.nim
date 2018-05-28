@@ -1,4 +1,4 @@
-import tokens, rules, strutils
+import tokens, rules, strutils, console
 
 type
     Parser* = object
@@ -34,7 +34,8 @@ proc match(parser: var Parser, tokens: varargs[Tokens]): bool =
 proc consume(parser: var Parser, kind: Tokens, message: string): Token =
     if parser.check(kind):
         return parser.advance
-    raise newException(Exception, message)
+    error(message)
+    quit()
 
 proc expression(parser: var Parser): Expr
 
@@ -65,14 +66,15 @@ proc primary(parser: var Parser): Expr =
         )
 
     if parser.match(LEFT_PAREN):
+        var expression = parser.expression
         discard parser.consume(RIGHT_PAREN, "Expected ')' after the expression")
-        return Grouping(expression: parser.expression)
+        return Grouping(expression: expression)
 
-    raise newException(Exception, "Expected expression")
+    error("Expected an expression. Failed with the lexeme " & parser.peek.lexeme & " at line " & $parser.peek.line)
+    quit()
 
 proc unary(parser: var Parser): Expr =
     if parser.match(BANG, MINUS):
-        echo "UNARY"
         return Unary(
             operator: parser.previous,
             right: parser.unary
@@ -82,7 +84,6 @@ proc unary(parser: var Parser): Expr =
 proc multiplication(parser: var Parser): Expr =
     result = parser.unary
     while parser.match(SLASH, STAR):
-        echo "MUL"
         result = Binary(
             left: result,
             operator: parser.previous,
@@ -92,7 +93,6 @@ proc multiplication(parser: var Parser): Expr =
 proc addition(parser: var Parser): Expr =
     result = parser.multiplication
     while parser.match(MINUS, PLUS):
-        echo "ADD"
         result = Binary(
             left: result,
             operator: parser.previous,
@@ -102,7 +102,6 @@ proc addition(parser: var Parser): Expr =
 proc comparison(parser: var Parser): Expr =
     result = parser.addition
     while parser.match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL):
-        echo "COMP"
         result = Binary(
             left: result,
             operator: parser.previous,
@@ -112,7 +111,6 @@ proc comparison(parser: var Parser): Expr =
 proc equality(parser: var Parser): Expr =
     result = parser.comparison
     while parser.match(BANG_EQUAL, EQUAL_EQUAL):
-        echo "EQ"
         result = Binary(
             left: result,
             operator: parser.previous,

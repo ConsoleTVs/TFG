@@ -1,4 +1,4 @@
-import tokens, strutils, tables
+import tokens, strutils, tables, console
 
 type
     Lexer* = object
@@ -132,7 +132,7 @@ proc scanToken(lexer: var Lexer) =
                 lexer.identifier
             else:
                 # The character is unknown
-                echo "Unknown character '" & c & "' found at line " & $lexer.line
+                warning("Unknown character '" & c & "' found at line " & $lexer.line)
 
 proc scan*(lexer: var Lexer): seq[Token] =
     # Reset the variables

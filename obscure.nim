@@ -1,18 +1,31 @@
-import parseopt, lexer, parser, rules
+import parseopt, lexer, parser, rules, interpreter, console
 
 proc run(source: string) =
     # The magic starts here
+    "Starting lexical analysis...".success
+
     var
         lexer = Lexer(source: source)
         tokens = lexer.scan
-        parser = Parser(tokens: tokens)
+
     for token in tokens:
-        echo token
-    var expression = parser.parse
-    echo $expression
+        info($token, "Token Found")
+
+    "Lexical analysis complete".success
+    "Starting syntactic and semantic analysis...".success
+
+    var
+        parser = Parser(tokens: tokens)
+        expression = parser.parse
+    info($expression, "Abstract Syntax Tree")
+    "Syntactic and semantic analysis complete".success
+    "Starting code evaluation...".success
+
+    var interpreter = Interpreter()
+    success($interpreter.interpret(expression), "Expression Result")
 
 proc prompt() =
-    echo "Promp not yet done :c"
+    warning("Promp not yet done :c")
     quit()
 
 proc file(path: string) =
@@ -22,7 +35,7 @@ proc file(path: string) =
         source = readFile(path)
     except:
         source = ""
-        echo "There was an error reading the file '" & path & "'"
+        error("There was an error reading the file '" & path & "'")
     if source != "":
         # The source program is loaded into the source var
         run(source)

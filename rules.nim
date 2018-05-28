@@ -36,7 +36,7 @@ method `$`*(expression: Grouping): string =
     return "(" & $expression.expression & ")"
 
 method `$`*(expression: Literal): string =
-    result = "(" & $expression.kind & " "
+    result = "("
     case expression.kind
     of lkNumber: result &= $expression.numValue
     of lkText: result &= expression.textValue
