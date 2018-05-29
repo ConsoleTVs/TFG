@@ -1,7 +1,7 @@
 import tokens, rules, strutils, console
 
 type
-    Parser* = object
+    Parser* = ref object
         tokens*: seq[Token]
         current: int
 
@@ -14,7 +14,7 @@ proc peek(parser: Parser): Token =
 proc isAtEnd(parser: Parser): bool =
     return parser.peek.kind == EOF
 
-proc advance(parser: var Parser): Token =
+proc advance(parser: Parser): Token =
     if not parser.isAtEnd:
         parser.current.inc # Increment the current position
     return parser.previous
@@ -24,31 +24,31 @@ proc check(parser: Parser, token: Tokens): bool =
         return false
     return parser.peek.kind == token
 
-proc match(parser: var Parser, tokens: varargs[Tokens]): bool =
+proc match(parser: Parser, tokens: varargs[Tokens]): bool =
     for token in tokens:
         if parser.check(token):
             discard parser.advance
             return true
     return false
 
-proc consume(parser: var Parser, kind: Tokens, message: string): Token =
+proc consume(parser: Parser, kind: Tokens, message: string): Token =
     if parser.check(kind):
         return parser.advance
     error(message)
     quit()
 
-proc expression(parser: var Parser): Expr
+proc expression(parser: Parser): Expr
 
-proc primary(parser: var Parser): Expr =
+proc primary(parser: Parser): Expr =
     if parser.match(FALSE):
         return Literal(
-            kind: lkBoolean,
-            boolValue: false
+            kind: lkTruth,
+            truthValue: false
         )
     if parser.match(TRUE):
         return Literal(
-            kind: lkBoolean,
-            boolValue: true
+            kind: lkTruth,
+            truthValue: true
         )
     if parser.match(NONE):
         return Literal(
@@ -73,7 +73,7 @@ proc primary(parser: var Parser): Expr =
     error("Expected an expression. Failed with the lexeme " & parser.peek.lexeme & " at line " & $parser.peek.line)
     quit()
 
-proc unary(parser: var Parser): Expr =
+proc unary(parser: Parser): Expr =
     if parser.match(BANG, MINUS):
         return Unary(
             operator: parser.previous,
@@ -81,7 +81,7 @@ proc unary(parser: var Parser): Expr =
         )
     return parser.primary
 
-proc multiplication(parser: var Parser): Expr =
+proc multiplication(parser: Parser): Expr =
     result = parser.unary
     while parser.match(SLASH, STAR):
         result = Binary(
@@ -90,7 +90,7 @@ proc multiplication(parser: var Parser): Expr =
             right: parser.unary
         )
 
-proc addition(parser: var Parser): Expr =
+proc addition(parser: Parser): Expr =
     result = parser.multiplication
     while parser.match(MINUS, PLUS):
         result = Binary(
@@ -99,7 +99,7 @@ proc addition(parser: var Parser): Expr =
             right: parser.multiplication
         )
 
-proc comparison(parser: var Parser): Expr =
+proc comparison(parser: Parser): Expr =
     result = parser.addition
     while parser.match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL):
         result = Binary(
@@ -108,7 +108,7 @@ proc comparison(parser: var Parser): Expr =
             right: parser.addition
         )
 
-proc equality(parser: var Parser): Expr =
+proc equality(parser: Parser): Expr =
     result = parser.comparison
     while parser.match(BANG_EQUAL, EQUAL_EQUAL):
         result = Binary(
@@ -117,11 +117,41 @@ proc equality(parser: var Parser): Expr =
             right: parser.comparison()
         )
 
-proc expression(parser: var Parser): Expr =
+proc expression(parser: Parser): Expr =
     return parser.equality
 
-proc parse*(parser: var Parser): Expr =
-    try:
-        return parser.expression
-    except:
-        raise
+proc statement(parser: Parser): Stmt
+
+proc expressionStatement(parser: Parser): Stmt =
+    var expression = parser.expression
+    discard parser.consume(DOT, "Expect '.' after statement")
+    return ExprStmt(expression: expression)
+
+proc showStatement(parser: Parser): Stmt =
+    var expression = parser.expression
+    discard parser.consume(DOT, "Expect '.' after statement")
+    return ShowStmt(expression: expression)
+
+proc ifStatement(parser: Parser): Stmt =
+    discard parser.consume(LEFT_PAREN, "Expect a '(' after the 'if' condition")
+    var
+        condition = parser.expression
+        res = IfStmt(condition: condition)
+    discard parser.consume(RIGHT_PAREN, "Expect a ')' after the 'if' condition")
+    res.thenBranch = parser.statement
+    res.elseBranch = nil
+    if parser.match(ELSE):
+        res.elseBranch = parser.statement
+    return res
+
+proc statement(parser: Parser): Stmt =
+    if parser.match(IF):
+        return parser.ifStatement
+    if parser.match(SHOW):
+        return parser.showStatement
+    return parser.expressionStatement
+
+proc parse*(parser: Parser): seq[Stmt] =
+    result = @[]
+    while not parser.isAtEnd:
+        result.add(parser.statement)

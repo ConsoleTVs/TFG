@@ -1,4 +1,4 @@
-import rules, tokens, console
+import rules, tokens, console, typetraits, math
 
 type
     Interpreter* = ref object
@@ -7,8 +7,15 @@ type
         case kind*: LiteralKind
         of lkNumber: numValue*: float
         of lkText: textValue*: string
-        of lkBoolean: boolValue*: bool
+        of lkTruth: truthValue*: bool
         of lkNone: discard
+
+proc `$`*(value: Value): string =
+    case value.kind:
+        of lkNumber: return $value.numValue
+        of lkText: return value.textValue
+        of lkTruth: return $value.truthValue
+        else: return ""
 
 proc `-`(value: Value): Value =
     result = Value(kind: value.kind)
@@ -21,28 +28,42 @@ proc `-`(value: Value): Value =
 proc `!`(value: Value): Value =
     result = Value(kind: value.kind)
     case value.kind:
-        of lkBoolean: result.boolValue = not value.boolValue
-        else: discard
+        of lkTruth: result.truthValue = not value.truthValue
+        else:
+            error("The unary '!' operand must be followed by a truth")
+            quit()
 
-template `+`(left, right: Value): float = left.numValue + right.numValue
+proc `+`(left, right: Value): float = left.numValue + right.numValue
 
-template `-`(left, right: Value): float = left.numValue - right.numValue
+proc `-`(left, right: Value): float = left.numValue - right.numValue
 
-template `*`(left, right: Value): float = left.numValue * right.numValue
+proc `*`(left, right: Value): float = left.numValue * right.numValue
 
-template `/`(left, right: Value): float = left.numValue / right.numValue
+proc `/`(left, right: Value): float = left.numValue / right.numValue
 
-template `==`(left, right: Value): bool = left.numValue == right.numValue
+proc `==`(left, right: Value): bool =
+    if left.kind == lkNumber:
+        return left.numValue == right.numValue
+    elif left.kind == lkTruth:
+        return left.truthValue == right.truthValue
+    error("The equal == operation requires either truths or numbers on both sides")
+    quit()
 
-template `!=`(left, right: Value): bool = left.numValue != right.numValue
+proc `!=`(left, right: Value): bool =
+    if left.kind == lkNumber:
+        return left.numValue != right.numValue
+    elif left.kind == lkTruth:
+        return left.truthValue != right.truthValue
+    error("The not equal != operation requires either truths or numbers on both sides")
+    quit()
 
-template `>`(left, right: Value): bool = left.numValue > right.numValue
+proc `>`(left, right: Value): bool = left.numValue > right.numValue
 
-template `>=`(left, right: Value): bool = left.numValue <= right.numValue
+proc `>=`(left, right: Value): bool = left.numValue <= right.numValue
 
-template `<`(left, right: Value): bool = left.numValue < right.numValue
+proc `<`(left, right: Value): bool = left.numValue < right.numValue
 
-template `<=`(left, right: Value): bool = left.numValue <= right.numValue
+proc `<=`(left, right: Value): bool = left.numValue <= right.numValue
 
 method evaluate(interpreter: Interpreter, expression: Expr): Value {.base.} = Value(kind: lkNone)
 
@@ -51,46 +72,93 @@ method evaluate(interpreter: Interpreter, expression: Literal): Value =
     case expression.kind:
         of lkNumber: result.numValue = expression.numValue
         of lkText: result.textValue = expression.textValue
-        of lkBoolean: result.boolValue = expression.boolValue
+        of lkTruth: result.truthValue = expression.truthValue
         else: discard
 
 method evaluate(interpreter: Interpreter, expression: Unary): Value =
     case expression.operator.kind:
-        of MINUS: return -(interpreter.evaluate(expression.right))
-        of BANG: return !(interpreter.evaluate(expression.right))
+        of MINUS: return -interpreter.evaluate(expression.right)
+        of BANG: return !interpreter.evaluate(expression.right)
         else: return Value()
+
+proc matchValues(expression: Binary, left, right: Value) =
+    if left.kind != right.kind:
+        error("The left and right expressions for the " & expression.operator.lexeme & " operation at line " & $expression.operator.line & " are not the same type")
+        quit()
+
+proc matchNumericValues(expression: Binary, left, right: Value) =
+    if left.kind != right.kind or left.kind != lkNumber :
+        error("The left and right expressions for the " & expression.operator.lexeme & " operation at line " & $expression.operator.line & " are not numbers")
+        quit()
 
 method evaluate(interpreter: Interpreter, expression: Binary): Value =
     let
         left = interpreter.evaluate(expression.left)
         right = interpreter.evaluate(expression.right)
     case expression.operator.kind:
-        of PLUS: return Value(kind: lkNumber, numValue: left + right)
-        of MINUS: return Value(kind: lkNumber, numValue: left - right)
-        of STAR: return Value(kind: lkNumber, numValue: left * right)
-        of SLASH: return Value(kind: lkNumber, numValue: left / right)
-        of EQUAL_EQUAL: return Value(kind: lkBoolean, boolValue: left == right)
-        of BANG_EQUAL: return Value(kind: lkBoolean, boolValue: left != right)
-        of LESS: return Value(kind: lkBoolean, boolValue: left < right)
-        of LESS_EQUAL: return Value(kind: lkBoolean, boolValue: left <= right)
-        of GREATER: return Value(kind: lkBoolean, boolValue: left > right)
-        of GREATER_EQUAL: return Value(kind: lkBoolean, boolValue: left >= right)
+        of PLUS:
+            expression.matchNumericValues(left, right)
+            return Value(kind: lkNumber, numValue: left + right)
+        of MINUS:
+            expression.matchNumericValues(left, right)
+            return Value(kind: lkNumber, numValue: left - right)
+        of STAR:
+            expression.matchNumericValues(left, right)
+            return Value(kind: lkNumber, numValue: left * right)
+        of SLASH:
+            expression.matchNumericValues(left, right)
+            return Value(kind: lkNumber, numValue: left / right)
+        of EQUAL_EQUAL:
+            expression.matchValues(left, right)
+            return Value(kind: lkTruth, truthValue: left == right)
+        of BANG_EQUAL:
+            expression.matchValues(left, right)
+            return Value(kind: lkTruth, truthValue: left != right)
+        of LESS:
+            expression.matchNumericValues(left, right)
+            return Value(kind: lkTruth, truthValue: left < right)
+        of LESS_EQUAL:
+            expression.matchNumericValues(left, right)
+            return Value(kind: lkTruth, truthValue: left <= right)
+        of GREATER:
+            expression.matchNumericValues(left, right)
+            return Value(kind: lkTruth, truthValue: left > right)
+        of GREATER_EQUAL:
+            expression.matchNumericValues(left, right)
+            return Value(kind: lkTruth, truthValue: left >= right)
         else: discard
 
 method evaluate(interpreter: Interpreter, expression: Grouping): Value =
     return interpreter.evaluate(expression.expression)
 
-proc `$`*(value: Value): string =
-    case value.kind:
-        of lkNumber: return $value.numValue
-        of lkText: return value.textValue
-        of lkBoolean: return $value.boolValue
-        else: return ""
 
-proc interpret*(interpreter: Interpreter, expression: Expr): Value =
-    result = interpreter.evaluate(expression)
+method evaluate(interpreter: Interpreter, statement: Stmt): Value {.base.} = Value(kind: lkNone)
+
+method evaluate(interpreter: Interpreter, statement: ShowStmt): Value =
+    echo $interpreter.evaluate(statement.expression)
+    return Value(kind: lkNone)
+
+method evaluate(interpreter: Interpreter, statement: ExprStmt): Value =
+    discard interpreter.evaluate(statement.expression)
+    return Value(kind: lkNone)
+
+proc boolValue(value: Value): bool =
+    if value.kind != lkTruth:
+        return false
+    return value.truthValue
+
+method evaluate(interpreter: Interpreter, statement: IfStmt): Value =
+    var condition = interpreter.evaluate(statement.condition)
+    if condition.boolValue:
+        discard interpreter.evaluate(statement.thenBranch)
+    elif statement.elseBranch != nil:
+        discard interpreter.evaluate(statement.elseBranch)
+    return Value(kind: lkNone)
+
+proc interpret*(interpreter: Interpreter, statements: seq[Stmt]): void =
     try:
-        result = interpreter.evaluate(expression)
+        for statement in statements:
+            discard interpreter.evaluate(statement)
     except:
-        error("The expression result can't be interpreted")
+        error("Can't evaluate the statements")
         quit()

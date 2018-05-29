@@ -1,1 +1,7 @@
-2 + 2 * 2 + 1
+show 1+1.
+show "L'aleix es tonto el cul".
+show -1 + 2 * 2 + 2.
+if (false)
+    show "OK".
+else
+    show "NOT OK".

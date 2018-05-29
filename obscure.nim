@@ -16,13 +16,14 @@ proc run(source: string) =
 
     var
         parser = Parser(tokens: tokens)
-        expression = parser.parse
-    info($expression, "Abstract Syntax Tree")
+        statements = parser.parse
+
     "Syntactic and semantic analysis complete".success
     "Starting code evaluation...".success
 
     var interpreter = Interpreter()
-    success($interpreter.interpret(expression), "Expression Result")
+    interpreter.interpret(statements)
+    "Finished program".success
 
 proc prompt() =
     warning("Promp not yet done :c")

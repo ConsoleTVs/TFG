@@ -1,6 +1,6 @@
 // Sample line comment
 action operation(argument):
-    if operation > 5:
+    if (operation > 5):
         return (12 + 3) * argument;
     return 5.
 

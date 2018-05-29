@@ -1,8 +1,12 @@
 import tokens, typetraits
 
 type
+    #[
+        Expressions
+    ]#
+
     LiteralKind* = enum
-        lkNumber, lkText, lkBoolean, lkNone
+        lkNumber, lkText, lkTruth, lkNone
 
     Expr* = ref object of RootObj
 
@@ -21,10 +25,26 @@ type
         case kind*: LiteralKind
         of lkNumber: numValue*: float
         of lkText: textValue*: string
-        of lkBoolean: boolValue*: bool
+        of lkTruth: truthValue*: bool
         else: discard
 
-method `$`*(expression: Expr): string {.base.} = return "(Expression)"
+    #[
+        Statements
+    ]#
+    Stmt* = ref object of RootObj
+
+    ExprStmt* = ref object of Stmt
+        expression*: Expr
+
+    ShowStmt* = ref object of Stmt
+        expression*: Expr
+
+    IfStmt* = ref object of Stmt
+        condition*: Expr
+        thenBranch*: Stmt
+        elseBranch*: Stmt
+
+method `$`*(expression: Expr): string {.base.} = "(Expression)"
 
 method `$`*(expression: Binary): string =
     return "(" & $expression.left & " " & expression.operator.lexeme & " " & $expression.right & ")"
@@ -40,6 +60,14 @@ method `$`*(expression: Literal): string =
     case expression.kind
     of lkNumber: result &= $expression.numValue
     of lkText: result &= expression.textValue
-    of lkBoolean: result &= $expression.boolValue
+    of lkTruth: result &= $expression.truthValue
     else: discard
     result &= ")"
+
+method `$`*(statement: Stmt): string {.base.} = "(Statement)"
+
+method `$`*(statement: ExprStmt): string = "(" & $statement.expression & ")"
+
+method `$`*(statement: ShowStmt): string = "(" & $statement.expression & ")"
+
+method `$`*(statement: IfStmt): string = "(" & $statement.condition & ")"
