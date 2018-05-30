@@ -1,4 +1,4 @@
-import parseopt, lexer, parser, rules, interpreter, console
+import parseopt, lexer, parser, rules, interpreter, console, enviroment, tables
 
 proc run(source: string) =
     # The magic starts here
@@ -12,7 +12,7 @@ proc run(source: string) =
         info($token, "Token Found")
 
     "Lexical analysis complete".success
-    "Starting syntactic and semantic analysis...".success
+    "Starting syntactic analysis...".success
 
     var
         parser = Parser(tokens: tokens)
@@ -21,7 +21,9 @@ proc run(source: string) =
     "Syntactic and semantic analysis complete".success
     "Starting code evaluation...".success
 
-    var interpreter = Interpreter()
+    var
+        enviroment = Enviroment(values: initTable[string, Value]())
+        interpreter = Interpreter(enviroment: enviroment)
     interpreter.interpret(statements)
     "Finished program".success
 

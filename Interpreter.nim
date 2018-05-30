@@ -1,9 +1,7 @@
-import rules, tokens, console, typetraits, math
+import rules, tokens, console, typetraits
 
 type
-    Interpreter* = ref object
-
-    Value = ref object
+    Value* = ref object
         case kind*: LiteralKind
         of lkNumber: numValue*: float
         of lkText: textValue*: string
@@ -16,6 +14,13 @@ proc `$`*(value: Value): string =
         of lkText: return value.textValue
         of lkTruth: return $value.truthValue
         else: return ""
+
+# To solve the cyclic import, we import it here
+import enviroment
+
+type
+    Interpreter* = ref object
+        enviroment*: Enviroment
 
 proc `-`(value: Value): Value =
     result = Value(kind: value.kind)
@@ -131,6 +136,8 @@ method evaluate(interpreter: Interpreter, expression: Binary): Value =
 method evaluate(interpreter: Interpreter, expression: Grouping): Value =
     return interpreter.evaluate(expression.expression)
 
+method evaluate(interpreter: Interpreter, expression: Variable): Value =
+    return interpreter.enviroment.get(expression.name)
 
 method evaluate(interpreter: Interpreter, statement: Stmt): Value {.base.} = Value(kind: lkNone)
 
@@ -146,6 +153,13 @@ proc boolValue(value: Value): bool =
     if value.kind != lkTruth:
         return false
     return value.truthValue
+
+method evaluate(interpreter: Interpreter, statement: VarStmt): Value =
+        var value: Value = nil
+        if statement.initializer != nil:
+            value = interpreter.evaluate(statement.initializer)
+        interpreter.enviroment.define(statement.name.lexeme, value)
+        return Value(kind: lkNone)
 
 method evaluate(interpreter: Interpreter, statement: IfStmt): Value =
     var condition = interpreter.evaluate(statement.condition)

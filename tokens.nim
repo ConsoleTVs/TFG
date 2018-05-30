@@ -16,7 +16,7 @@ type
 
         # Keywords.
         AND, OR, TRUE, FALSE, ACTION, IF, ELSE,
-        NONE, RETURN, FOR, WHILE, SHOW
+        NONE, RETURN, FOR, WHILE, SHOW, VAR
 
         EOF
 

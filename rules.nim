@@ -28,6 +28,13 @@ type
         of lkTruth: truthValue*: bool
         else: discard
 
+    Variable* = ref object of Expr
+        name*: Token
+
+    Logical* = ref object of Expr
+        operator*: Token
+        left*, right*: Expr
+
     #[
         Statements
     ]#
@@ -41,13 +48,19 @@ type
 
     IfStmt* = ref object of Stmt
         condition*: Expr
-        thenBranch*: Stmt
-        elseBranch*: Stmt
+        thenBranch*, elseBranch*: Stmt
+
+    VarStmt* = ref object of Stmt
+        name*: Token
+        initializer*: Expr
 
 method `$`*(expression: Expr): string {.base.} = "(Expression)"
 
 method `$`*(expression: Binary): string =
     return "(" & $expression.left & " " & expression.operator.lexeme & " " & $expression.right & ")"
+
+method `$`*(expression: Variable): string =
+    return "( var " & $expression.name & ")"
 
 method `$`*(expression: Unary): string =
     return "(" & expression.operator.lexeme & " " & $expression.right & ")"
@@ -71,3 +84,5 @@ method `$`*(statement: ExprStmt): string = "(" & $statement.expression & ")"
 method `$`*(statement: ShowStmt): string = "(" & $statement.expression & ")"
 
 method `$`*(statement: IfStmt): string = "(" & $statement.condition & ")"
+
+method `$`*(statement: VarStmt): string = "(" & $statement.name.lexeme & " = " & $statement.initializer & ")"

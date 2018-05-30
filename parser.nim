@@ -65,6 +65,9 @@ proc primary(parser: Parser): Expr =
             textValue: parser.previous.value
         )
 
+    if parser.match(IDENTIFIER):
+        return Variable(name: parser.previous)
+
     if parser.match(LEFT_PAREN):
         var expression = parser.expression
         discard parser.consume(RIGHT_PAREN, "Expected ')' after the expression")
@@ -124,6 +127,7 @@ proc statement(parser: Parser): Stmt
 
 proc expressionStatement(parser: Parser): Stmt =
     var expression = parser.expression
+    echo $expression
     discard parser.consume(DOT, "Expect '.' after statement")
     return ExprStmt(expression: expression)
 
@@ -151,7 +155,20 @@ proc statement(parser: Parser): Stmt =
         return parser.showStatement
     return parser.expressionStatement
 
+proc varDeclaration(parser: Parser): Stmt =
+    var name = parser.consume(IDENTIFIER, "Expected a variable name")
+    var initializer: Expr = nil
+    if parser.match(EQUAL):
+        initializer = parser.expression
+    discard parser.consume(DOT, "Expected '.' after variable declaration")
+    return VarStmt(name: name, initializer: initializer)
+
+proc declaration(parser: Parser): Stmt =
+    if parser.match(VAR):
+        return parser.varDeclaration
+    return parser.statement
+
 proc parse*(parser: Parser): seq[Stmt] =
     result = @[]
     while not parser.isAtEnd:
-        result.add(parser.statement)
+        result.add(parser.declaration)

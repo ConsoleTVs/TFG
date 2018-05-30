@@ -18,7 +18,8 @@ const keywords = {
     "show"      : SHOW,
     "none"      : NONE,
     "action"    : ACTION,
-    "return"    : RETURN
+    "return"    : RETURN,
+    "var"       : VAR
 }.toTable
 
 proc isAtEnd(lexer: Lexer): bool =
