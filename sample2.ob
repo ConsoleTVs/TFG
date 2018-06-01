@@ -2,3 +2,7 @@ var a = 1.
 show a.
 var a = 2.
 show a.
+var b.
+show b.
+var c = 3.2.
+show c.

@@ -155,7 +155,7 @@ proc boolValue(value: Value): bool =
     return value.truthValue
 
 method evaluate(interpreter: Interpreter, statement: VarStmt): Value =
-        var value: Value = nil
+        var value = Value(kind: lkNone)
         if statement.initializer != nil:
             value = interpreter.evaluate(statement.initializer)
         interpreter.enviroment.define(statement.name.lexeme, value)
