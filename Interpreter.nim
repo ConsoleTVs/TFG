@@ -1,4 +1,4 @@
-import rules, tokens, console, typetraits
+import rules, tokens, console, typetraits, tables
 
 type
     Value* = ref object
@@ -139,6 +139,10 @@ method evaluate(interpreter: Interpreter, expression: Grouping): Value =
 method evaluate(interpreter: Interpreter, expression: Variable): Value =
     return interpreter.enviroment.get(expression.name)
 
+method evaluate(interpreter: Interpreter, expression: Assign): Value =
+    result = interpreter.evaluate(expression.value)
+    interpreter.enviroment.assign(expression.name.lexeme, result)
+
 method evaluate(interpreter: Interpreter, statement: Stmt): Value {.base.} = Value(kind: lkNone)
 
 method evaluate(interpreter: Interpreter, statement: ShowStmt): Value =
@@ -160,6 +164,15 @@ method evaluate(interpreter: Interpreter, statement: VarStmt): Value =
             value = interpreter.evaluate(statement.initializer)
         interpreter.enviroment.define(statement.name.lexeme, value)
         return Value(kind: lkNone)
+
+method evaluate(interpreter: Interpreter, statement: Block): Value =
+    result = Value(kind: lkNone)
+    var
+        previous = interpreter.enviroment
+    interpreter.enviroment = Enviroment(values: initTable[string, Value](), enclosing: previous)
+    for s in statement.statements:
+        discard interpreter.evaluate(s)
+    interpreter.enviroment = previous
 
 method evaluate(interpreter: Interpreter, statement: IfStmt): Value =
     var condition = interpreter.evaluate(statement.condition)

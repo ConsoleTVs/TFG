@@ -120,14 +120,24 @@ proc equality(parser: Parser): Expr =
             right: parser.comparison()
         )
 
+proc assignment(parser: Parser): Expr =
+    result = parser.equality
+    if parser.match(EQUAL):
+        if result of Variable:
+            return Assign(
+                name: cast[Variable](result).name,
+                value: parser.assignment
+            )
+        error("Invalid assignment target")
+        quit()
+
 proc expression(parser: Parser): Expr =
-    return parser.equality
+    return parser.assignment
 
 proc statement(parser: Parser): Stmt
 
 proc expressionStatement(parser: Parser): Stmt =
     var expression = parser.expression
-    echo $expression
     discard parser.consume(DOT, "Expect '.' after statement")
     return ExprStmt(expression: expression)
 
@@ -148,11 +158,21 @@ proc ifStatement(parser: Parser): Stmt =
         res.elseBranch = parser.statement
     return res
 
+proc declaration(parser: Parser): Stmt # Forward declaration
+
+proc blockStatement(parser: Parser): seq[Stmt] =
+    result = @[]
+    while not parser.check(RIGHT_BRACE) and not parser.isAtEnd:
+        result.add(parser.declaration)
+    discard parser.consume(RIGHT_BRACE, "Expect '}' after block")
+
 proc statement(parser: Parser): Stmt =
     if parser.match(IF):
         return parser.ifStatement
-    if parser.match(SHOW):
+    elif parser.match(SHOW):
         return parser.showStatement
+    elif parser.match(LEFT_BRACE):
+        return Block(statements: parser.blockStatement)
     return parser.expressionStatement
 
 proc varDeclaration(parser: Parser): Stmt =

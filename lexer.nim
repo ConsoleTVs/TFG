@@ -92,8 +92,10 @@ proc scanToken(lexer: var Lexer) =
         of '+': lexer.addToken(PLUS)
         of '-': lexer.addToken(MINUS)
         of '*': lexer.addToken(STAR)
-        of ':': lexer.addToken(COLON)
-        of ';': lexer.addToken(SEMICOLON)
+        # of ':': lexer.addToken(COLON)
+        # of ';': lexer.addToken(SEMICOLON)
+        of '{': lexer.addToken(LEFT_BRACE)
+        of '}': lexer.addToken(RIGHT_BRACE)
         of '=':
             if lexer.match('='):
                 lexer.addToken(EQUAL_EQUAL)

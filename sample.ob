@@ -5,4 +5,4 @@ action operation(argument):
     return 5.
 
 show operation(2).
-show "Done."
+show "Done.".

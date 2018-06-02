@@ -31,6 +31,10 @@ type
     Variable* = ref object of Expr
         name*: Token
 
+    Assign* = ref object of Expr
+        name*: Token
+        value*: Expr
+
     Logical* = ref object of Expr
         operator*: Token
         left*, right*: Expr
@@ -46,13 +50,16 @@ type
     ShowStmt* = ref object of Stmt
         expression*: Expr
 
-    IfStmt* = ref object of Stmt
-        condition*: Expr
-        thenBranch*, elseBranch*: Stmt
-
     VarStmt* = ref object of Stmt
         name*: Token
         initializer*: Expr
+
+    Block* = ref object of Stmt
+        statements*: seq[Stmt]
+
+    IfStmt* = ref object of Stmt
+        condition*: Expr
+        thenBranch*, elseBranch*: Stmt
 
 method `$`*(expression: Expr): string {.base.} = "(Expression)"
 

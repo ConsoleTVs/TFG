@@ -4,6 +4,7 @@ type
         LEFT_PAREN, RIGHT_PAREN,
         COMMA, DOT, COLON, SEMICOLON
         MINUS, PLUS, SLASH, STAR,
+        LEFT_BRACE, RIGHT_BRACE
 
         # One or two character tokens.
         BANG, BANG_EQUAL,
