@@ -1,4 +1,4 @@
-import tokens, rules, strutils, console
+import tokens, rules, strutils, logs
 
 type
     Parser* = ref object
@@ -34,8 +34,10 @@ proc match(parser: Parser, tokens: varargs[Tokens]): bool =
 proc consume(parser: Parser, kind: Tokens, message: string): Token =
     if parser.check(kind):
         return parser.advance
-    error(message)
-    quit()
+    logger.error(
+        message = message,
+        halt = true
+    )
 
 proc expression(parser: Parser): Expr
 
@@ -73,8 +75,10 @@ proc primary(parser: Parser): Expr =
         discard parser.consume(RIGHT_PAREN, "Expected ')' after the expression")
         return Grouping(expression: expression)
 
-    error("Expected an expression. Failed with the lexeme " & parser.peek.lexeme & " at line " & $parser.peek.line)
-    quit()
+    logger.error(
+        message = "Expected an expression. Failed with the lexeme " & parser.peek.lexeme & " at line " & $parser.peek.line,
+        halt = true
+    )
 
 proc unary(parser: Parser): Expr =
     if parser.match(BANG, MINUS):
@@ -120,16 +124,36 @@ proc equality(parser: Parser): Expr =
             right: parser.comparison()
         )
 
-proc assignment(parser: Parser): Expr =
+proc andOperator(parser: Parser): Expr =
     result = parser.equality
+    while parser.match(AND):
+        result = Logical(
+            left: result,
+            operator: parser.previous,
+            right: parser.equality
+        )
+
+proc orOperator(parser: Parser): Expr =
+    result = parser.andOperator
+    while parser.match(OR):
+        result = Logical(
+            left: result,
+            operator: parser.previous,
+            right: parser.andOperator
+        )
+
+proc assignment(parser: Parser): Expr =
+    result = parser.orOperator
     if parser.match(EQUAL):
         if result of Variable:
             return Assign(
                 name: cast[Variable](result).name,
                 value: parser.assignment
             )
-        error("Invalid assignment target")
-        quit()
+        logger.error(
+            message = "Invalid assignment target",
+            halt = true
+        )
 
 proc expression(parser: Parser): Expr =
     return parser.assignment
@@ -166,11 +190,22 @@ proc blockStatement(parser: Parser): seq[Stmt] =
         result.add(parser.declaration)
     discard parser.consume(RIGHT_BRACE, "Expect '}' after block")
 
+proc whileStatement(parser: Parser): Stmt =
+    discard parser.consume(LEFT_PAREN, "Expect '(' after while")
+    var condition = parser.expression
+    discard parser.consume(RIGHT_PAREN, "Expect ')' after condition")
+    return WhileStmt(
+        condition: condition,
+        body: parser.statement
+    )
+
 proc statement(parser: Parser): Stmt =
     if parser.match(IF):
         return parser.ifStatement
     elif parser.match(SHOW):
         return parser.showStatement
+    elif parser.match(WHILE):
+        return parser.whileStatement
     elif parser.match(LEFT_BRACE):
         return Block(statements: parser.blockStatement)
     return parser.expressionStatement

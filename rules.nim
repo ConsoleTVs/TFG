@@ -61,6 +61,10 @@ type
         condition*: Expr
         thenBranch*, elseBranch*: Stmt
 
+    WhileStmt* = ref object of Stmt
+        condition*: Expr
+        body*: Stmt
+
 method `$`*(expression: Expr): string {.base.} = "(Expression)"
 
 method `$`*(expression: Binary): string =
@@ -90,6 +94,16 @@ method `$`*(statement: ExprStmt): string = "(" & $statement.expression & ")"
 
 method `$`*(statement: ShowStmt): string = "(" & $statement.expression & ")"
 
-method `$`*(statement: IfStmt): string = "(" & $statement.condition & ")"
-
 method `$`*(statement: VarStmt): string = "(" & $statement.name.lexeme & " = " & $statement.initializer & ")"
+
+method `$`*(statement: Block): string =
+    result = "{"
+    for s in statement.statements:
+        result &= $s
+    result &= "}"
+
+method `$`*(statement: IfStmt): string =
+    result = "(" & $statement.condition & " ? " & $statement.thenBranch & " : " & $statement.elseBranch & ")"
+
+method `$`*(statement: WhileStmt): string =
+    result = "( WHILE " & $statement.condition & " DO " & $statement.body & ")"

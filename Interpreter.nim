@@ -1,4 +1,4 @@
-import rules, tokens, console, typetraits, tables
+import rules, tokens, logs, typetraits, tables
 
 type
     Value* = ref object
@@ -27,16 +27,20 @@ proc `-`(value: Value): Value =
     case value.kind:
         of lkNumber: result.numValue = -value.numValue
         else:
-            error("The unary '-' operand must be followed by a number")
-            quit()
+            logger.error(
+                message = "The unary '-' operand must be followed by a number",
+                halt = true
+            )
 
 proc `!`(value: Value): Value =
     result = Value(kind: value.kind)
     case value.kind:
         of lkTruth: result.truthValue = not value.truthValue
         else:
-            error("The unary '!' operand must be followed by a truth")
-            quit()
+            logger.error(
+                message = "The unary '!' operand must be followed by a truth",
+                halt = true
+            )
 
 proc `+`(left, right: Value): float = left.numValue + right.numValue
 
@@ -51,16 +55,20 @@ proc `==`(left, right: Value): bool =
         return left.numValue == right.numValue
     elif left.kind == lkTruth:
         return left.truthValue == right.truthValue
-    error("The equal == operation requires either truths or numbers on both sides")
-    quit()
+    logger.error(
+        message = "The equal == operation requires either truths or numbers on both sides",
+        halt = true
+    )
 
 proc `!=`(left, right: Value): bool =
     if left.kind == lkNumber:
         return left.numValue != right.numValue
     elif left.kind == lkTruth:
         return left.truthValue != right.truthValue
-    error("The not equal != operation requires either truths or numbers on both sides")
-    quit()
+    logger.error(
+        message = "The not equal != operation requires either truths or numbers on both sides",
+        halt = true
+    )
 
 proc `>`(left, right: Value): bool = left.numValue > right.numValue
 
@@ -86,15 +94,36 @@ method evaluate(interpreter: Interpreter, expression: Unary): Value =
         of BANG: return !interpreter.evaluate(expression.right)
         else: return Value()
 
+proc boolValue(value: Value): bool =
+    if value.kind == lkTruth:
+        return value.truthValue
+    elif value.kind == lkText and value.textValue != "":
+        return true
+    return false
+
+method evaluate(interpreter: Interpreter, expression: Logical): Value =
+    var left = interpreter.evaluate(expression.left)
+    if expression.operator.kind == OR:
+        if left.boolValue:
+            return left
+    else:
+        if not left.boolValue:
+            return left
+    return interpreter.evaluate(expression.right)
+
 proc matchValues(expression: Binary, left, right: Value) =
     if left.kind != right.kind:
-        error("The left and right expressions for the " & expression.operator.lexeme & " operation at line " & $expression.operator.line & " are not the same type")
-        quit()
+        logger.error(
+            message = "The left and right expressions for the " & expression.operator.lexeme & " operation at line " & $expression.operator.line & " are not the same type",
+            halt = true
+        )
 
 proc matchNumericValues(expression: Binary, left, right: Value) =
     if left.kind != right.kind or left.kind != lkNumber :
-        error("The left and right expressions for the " & expression.operator.lexeme & " operation at line " & $expression.operator.line & " are not numbers")
-        quit()
+        logger.error(
+            message = "The left and right expressions for the " & expression.operator.lexeme & " operation at line " & $expression.operator.line & " are not numbers",
+            halt = true
+        )
 
 method evaluate(interpreter: Interpreter, expression: Binary): Value =
     let
@@ -153,11 +182,6 @@ method evaluate(interpreter: Interpreter, statement: ExprStmt): Value =
     discard interpreter.evaluate(statement.expression)
     return Value(kind: lkNone)
 
-proc boolValue(value: Value): bool =
-    if value.kind != lkTruth:
-        return false
-    return value.truthValue
-
 method evaluate(interpreter: Interpreter, statement: VarStmt): Value =
         var value = Value(kind: lkNone)
         if statement.initializer != nil:
@@ -182,10 +206,17 @@ method evaluate(interpreter: Interpreter, statement: IfStmt): Value =
         discard interpreter.evaluate(statement.elseBranch)
     return Value(kind: lkNone)
 
+method evaluate(interpreter: Interpreter, statement: WhileStmt): Value =
+    while boolValue(interpreter.evaluate(statement.condition)):
+        discard interpreter.evaluate(statement.body)
+    return Value(kind: lkNone)
+
 proc interpret*(interpreter: Interpreter, statements: seq[Stmt]): void =
     try:
         for statement in statements:
             discard interpreter.evaluate(statement)
     except:
-        error("Can't evaluate the statements")
-        quit()
+        logger.error(
+            message = "Can't evaluate the statements",
+            halt = true
+        )

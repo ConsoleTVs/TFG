@@ -1,35 +1,42 @@
-import parseopt, lexer, parser, rules, interpreter, console, enviroment, tables
+import parseopt, lexer, parser, rules, interpreter, logs, enviroment, tables
 
 proc run(source: string) =
     # The magic starts here
-    "Starting lexical analysis...".success
+
+    logger.success("Starting lexical analysis...", debug = true)
 
     var
         lexer = Lexer(source: source)
         tokens = lexer.scan
 
     for token in tokens:
-        info($token, "Token Found")
+        logger.info($token, "Token Found", debug = true)
 
-    "Lexical analysis complete".success
-    "Starting syntactic analysis...".success
+    logger.success("Lexical analysis complete", debug = true)
+    logger.success("Starting syntactic analysis...", debug = true)
 
     var
         parser = Parser(tokens: tokens)
         statements = parser.parse
 
-    "Syntactic and semantic analysis complete".success
-    "Starting code evaluation...".success
+    for s in statements:
+        logger.info($s, "Statement", debug = true)
+    logger.success("Syntactic and semantic analysis complete", debug = true)
+    logger.success("Starting code evaluation...", debug = true)
 
     var
         enviroment = Enviroment(values: initTable[string, Value]())
         interpreter = Interpreter(enviroment: enviroment)
+
     interpreter.interpret(statements)
-    "Finished program".success
+
+    logger.success("Finished program", debug = true)
 
 proc prompt() =
-    warning("Promp not yet done :c")
-    quit()
+    logger.error(
+        message = "Promp not yet done :c",
+        halt = true
+    )
 
 proc file(path: string) =
     # The main program will be loaded over a file located in the path
@@ -38,7 +45,7 @@ proc file(path: string) =
         source = readFile(path)
     except:
         source = ""
-        error("There was an error reading the file '" & path & "'")
+        logger.error("There was an error reading the file '" & path & "'")
     if source != "":
         # The source program is loaded into the source var
         run(source)
@@ -51,10 +58,16 @@ when isMainModule:
         params = initOptParser()
         sourceFile = ""
 
+    # Set the logging level
+    logger.debug = false
+
     for kind, key, val in params.getopt:
         if sourceFile == "" and kind == cmdArgument:
             sourceFile = key
         # Do something with other command line arguments
+        if kind == cmdShortOption:
+            if key == "d":
+                logger.debug = true
 
     if sourcefile != "":
         # Execute the script in the file

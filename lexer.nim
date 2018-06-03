@@ -1,4 +1,4 @@
-import tokens, strutils, tables, console
+import tokens, strutils, tables, logs
 
 type
     Lexer* = object
@@ -57,7 +57,10 @@ proc text(lexer: var Lexer) =
         discard lexer.advance
     # Check if we reached the end of the file
     if lexer.isAtEnd:
-        echo "There's an unterminated text at line " & $lexer.line
+        logger.error(
+            message = "There's an unterminated text at line " & $lexer.line,
+            halt = true
+        )
     # The remaining "
     discard lexer.advance
     lexer.addToken(TEXT, lexer.source[lexer.start + 1..lexer.current - 2])
@@ -135,7 +138,7 @@ proc scanToken(lexer: var Lexer) =
                 lexer.identifier
             else:
                 # The character is unknown
-                warning("Unknown character '" & c & "' found at line " & $lexer.line)
+                logger.warning("Unknown character '" & c & "' found at line " & $lexer.line)
 
 proc scan*(lexer: var Lexer): seq[Token] =
     # Reset the variables

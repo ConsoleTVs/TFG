@@ -1,4 +1,4 @@
-import tables, interpreter, tokens, console
+import tables, interpreter, tokens, logs
 
 type
     Enviroment* = ref object
@@ -15,13 +15,17 @@ proc assign*(enviroment: Enviroment, name: string, value: Value) =
     elif enviroment.enclosing != nil:
         enviroment.enclosing.assign(name, value)
         return
-    error("Undefined variable '" & name & "'")
-    quit()
+    logger.error(
+        message = "Undefined variable '" & name & "'",
+        halt = true
+    )
 
 proc get*(enviroment: Enviroment, name: Token): Value =
     if enviroment.values.hasKey(name.lexeme):
         return enviroment.values[name.lexeme]
     elif enviroment.enclosing != nil:
         return enviroment.enclosing.get(name)
-    error("Undefined variable '" & $name.lexeme & "'")
-    quit()
+    logger.error(
+        message = "Undefined variable '" & name.lexeme & "'",
+        halt = true
+    )
