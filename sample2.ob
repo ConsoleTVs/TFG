@@ -8,3 +8,5 @@ while (i < 1000) {
     i = i + 1.
 }
 //show "Ended".
+show time().
+show cpuTime().

@@ -39,6 +39,11 @@ type
         operator*: Token
         left*, right*: Expr
 
+    Call* = ref object of Expr
+        callee*: Expr
+        paren*: Token
+        arguments*: seq[Expr]
+
     #[
         Statements
     ]#
@@ -65,22 +70,27 @@ type
         condition*: Expr
         body*: Stmt
 
-method `$`*(expression: Expr): string {.base.} = "(Expression)"
+    ActionStmt* = ref object of Stmt
+        name*: Token
+        parameters*: seq[Token]
+        body*: seq[Stmt]
+
+method `$`*(expression: Expr): string {.base.} = "Expression()"
 
 method `$`*(expression: Binary): string =
-    return "(" & $expression.left & " " & expression.operator.lexeme & " " & $expression.right & ")"
+    return "Binary(" & $expression.left & ", " & expression.operator.lexeme & ", " & $expression.right & ")"
 
 method `$`*(expression: Variable): string =
-    return "( var " & $expression.name & ")"
+    return "Var(" & $expression.name & ")"
 
 method `$`*(expression: Unary): string =
-    return "(" & expression.operator.lexeme & " " & $expression.right & ")"
+    return "Unary(" & expression.operator.lexeme & ", " & $expression.right & ")"
 
 method `$`*(expression: Grouping): string =
-    return "(" & $expression.expression & ")"
+    return "Grouping(" & $expression.expression & ")"
 
 method `$`*(expression: Literal): string =
-    result = "("
+    result = "Literal("
     case expression.kind
     of lkNumber: result &= $expression.numValue
     of lkText: result &= expression.textValue
@@ -88,13 +98,13 @@ method `$`*(expression: Literal): string =
     else: discard
     result &= ")"
 
-method `$`*(statement: Stmt): string {.base.} = "(Statement)"
+method `$`*(statement: Stmt): string {.base.} = "Statement()"
 
-method `$`*(statement: ExprStmt): string = "(" & $statement.expression & ")"
+method `$`*(statement: ExprStmt): string = "Expression(" & $statement.expression & ")"
 
-method `$`*(statement: ShowStmt): string = "(" & $statement.expression & ")"
+method `$`*(statement: ShowStmt): string = "Show(" & $statement.expression & ")"
 
-method `$`*(statement: VarStmt): string = "(" & $statement.name.lexeme & " = " & $statement.initializer & ")"
+method `$`*(statement: VarStmt): string = "VarDeclaration(" & $statement.name.lexeme & ", " & $statement.initializer & ")"
 
 method `$`*(statement: Block): string =
     result = "{"
@@ -103,7 +113,10 @@ method `$`*(statement: Block): string =
     result &= "}"
 
 method `$`*(statement: IfStmt): string =
-    result = "(" & $statement.condition & " ? " & $statement.thenBranch & " : " & $statement.elseBranch & ")"
+    return "If(" & $statement.condition & ", " & $statement.thenBranch & ",  " & $statement.elseBranch & ")"
 
 method `$`*(statement: WhileStmt): string =
-    result = "( WHILE " & $statement.condition & " DO " & $statement.body & ")"
+    return "While(" & $statement.condition & ", " & $statement.body & ")"
+
+method `$`*(statement: ActionStmt): string =
+    return "Action(" & $statement.name & ", " & $statement.parameters & ", " & $statement.body & ")"

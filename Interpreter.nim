@@ -1,7 +1,7 @@
 import rules, tokens, logs, typetraits, tables
 
 type
-    Value* = ref object
+    Value* = ref object of RootObj
         case kind*: LiteralKind
         of lkNumber: numValue*: float
         of lkText: textValue*: string
@@ -20,7 +20,10 @@ import enviroment
 
 type
     Interpreter* = ref object
-        enviroment*: Enviroment
+        enviroment*, globals*: Enviroment
+
+# To solve the cyclic import, we import it here
+import callable
 
 proc `-`(value: Value): Value =
     result = Value(kind: value.kind)
@@ -171,6 +174,27 @@ method evaluate(interpreter: Interpreter, expression: Variable): Value =
 method evaluate(interpreter: Interpreter, expression: Assign): Value =
     result = interpreter.evaluate(expression.value)
     interpreter.enviroment.assign(expression.name.lexeme, result)
+
+method evaluate(interpreter: Interpreter, expression: Call): Value =
+    var
+        callee = interpreter.evaluate(expression.callee)
+        arguments: seq[Value] = @[]
+    for arg in expression.arguments:
+        arguments.add(interpreter.evaluate(arg))
+
+    if not (callee of Callable):
+        logger.error(
+            message = "Can only call functions and classes.",
+            halt = true
+        )
+
+    var function: Callable = cast[Callable](callee)
+    if arguments.len != function.arity:
+        logger.error(
+            message = "Expected " & $function.arity & " arguments, but got " & $arguments.len,
+            halt = true
+        )
+    return function.call(interpreter, arguments)
 
 method evaluate(interpreter: Interpreter, statement: Stmt): Value {.base.} = Value(kind: lkNone)
 

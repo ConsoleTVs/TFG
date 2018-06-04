@@ -80,13 +80,37 @@ proc primary(parser: Parser): Expr =
         halt = true
     )
 
+proc finishCall(parser: Parser, callee: Expr): Expr =
+    var arguments: seq[Expr] = @[]
+    if not parser.check(RIGHT_PAREN):
+        arguments.add(parser.expression)
+        if arguments.len >= 32:
+            logger.error($parser.peek, "Cannot have more than 32 arguments.");
+        while parser.match(COMMA):
+            arguments.add(parser.expression)
+            if arguments.len >= 32:
+                logger.error($parser.peek, "Cannot have more than 32 arguments.");
+    return Call(
+        callee: callee,
+        paren: parser.consume(RIGHT_PAREN, "Expect ')' after arguments."),
+        arguments: arguments
+    );
+
+proc call(parser: Parser): Expr =
+    result = parser.primary
+    while true:
+        if parser.match(LEFT_PAREN):
+            result = parser.finishCall(result)
+        else:
+            break
+
 proc unary(parser: Parser): Expr =
     if parser.match(BANG, MINUS):
         return Unary(
             operator: parser.previous,
             right: parser.unary
         )
-    return parser.primary
+    return parser.call
 
 proc multiplication(parser: Parser): Expr =
     result = parser.unary
@@ -218,7 +242,35 @@ proc varDeclaration(parser: Parser): Stmt =
     discard parser.consume(DOT, "Expected '.' after variable declaration")
     return VarStmt(name: name, initializer: initializer)
 
+proc actionDeclaration(parser: Parser): Stmt =
+    var name = parser.consume(IDENTIFIER, "Expect an action name")
+    discard parser.consume(LEFT_PAREN, "Expect '(' after action name.")
+    var parameters: seq[Token]
+    if not parser.check(RIGHT_PAREN):
+        if parameters.len >= 32:
+            logger.error(
+                message = "Action cannot have more than 32 parameters",
+                halt = true
+            )
+        parameters.add(parser.consume(IDENTIFIER, "Expected a parameter name"))
+        while parser.match(COMMA):
+            if parameters.len >= 32:
+                logger.error(
+                    message = "Action cannot have more than 32 parameters",
+                    halt = true
+                )
+            parameters.add(parser.consume(IDENTIFIER, "Expected a parameter name"))
+    discard parser.consume(RIGHT_PAREN, "Expect ')' after parameters.")
+    discard parser.consume(LEFT_BRACE, "Expect '{' before action body.")
+    return ActionStmt(
+        name: name,
+        parameters: parameters,
+        body: parser.blockStatement
+    )
+
 proc declaration(parser: Parser): Stmt =
+    if parser.match(ACTION):
+        return parser.actionDeclaration
     if parser.match(VAR):
         return parser.varDeclaration
     return parser.statement

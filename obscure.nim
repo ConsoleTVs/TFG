@@ -1,4 +1,4 @@
-import parseopt, lexer, parser, rules, interpreter, logs, enviroment, tables
+import parseopt, lexer, parser, rules, interpreter, logs, enviroment, tables, callable
 
 proc run(source: string) =
     # The magic starts here
@@ -21,12 +21,24 @@ proc run(source: string) =
 
     for s in statements:
         logger.info($s, "Statement", debug = true)
-    logger.success("Syntactic and semantic analysis complete", debug = true)
-    logger.success("Starting code evaluation...", debug = true)
+    logger.success("Syntactic analysis complete", debug = true)
+    logger.success("Starting semantic and code evaluation...", debug = true)
 
     var
         enviroment = Enviroment(values: initTable[string, Value]())
-        interpreter = Interpreter(enviroment: enviroment)
+        globals = Enviroment(values: initTable[string, Value]())
+        interpreter = Interpreter(
+            globals: globals,
+            enviroment: enviroment
+        )
+
+    # Native functions
+    enviroment.define("time", Time(
+        arity: 0
+    ))
+    enviroment.define("cpuTime", CpuTime(
+        arity: 0
+    ))
 
     interpreter.interpret(statements)
 

@@ -1,0 +1,9 @@
+var i = 0.
+var res = 0.
+while (i < 10000) {
+    res = res + i * 2.
+    i = i + 1.
+}
+show res.
+show "==EXECUTION TIME==".
+show cpuTime().
