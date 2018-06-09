@@ -1,8 +1,10 @@
 // Sample line comment
-action operation(argument):
-    if (operation > 5):
-        return (12 + 3) * argument;
+action operation(argument) {
+    if (operation > 5) {
+        return (12 + 3) * argument.
+    }
     return 5.
+}
 
 show operation(2).
 show "Done.".

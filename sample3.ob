@@ -1,0 +1,18 @@
+action fib(n) {
+    //show "== N ==".
+    //show n.
+    if (n < 2) {
+        //show " == RET ==".
+        //show n.
+        return n.
+    }
+    //show "== CALLER1 ==".
+    //show n - 2.
+    //show "== CALLER2 ==".
+    //show n - 1.
+    var res = fib(n - 2) + fib(n - 1).
+    //show "== RES ==".
+    //show res.
+    return res.
+}
+show fib(30).

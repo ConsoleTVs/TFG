@@ -1,12 +1,11 @@
-import tokens, typetraits
+import tokens, typetraits, sequtils, future
 
+#[
+    Expressions
+]#
 type
-    #[
-        Expressions
-    ]#
-
     LiteralKind* = enum
-        lkNumber, lkText, lkTruth, lkNone
+        lkNone, lkNumber, lkText, lkTruth
 
     Expr* = ref object of RootObj
 
@@ -44,9 +43,38 @@ type
         paren*: Token
         arguments*: seq[Expr]
 
-    #[
-        Statements
-    ]#
+method `$`*(expression: Expr): string {.base.} = "Expression()"
+
+method `$`*(expression: Binary): string =
+    return "Binary(" & $expression.left & ", " & expression.operator.lexeme & ", " & $expression.right & ")"
+
+method `$`*(expression: Unary): string = "Unary(" & expression.operator.lexeme & ", " & $expression.right & ")"
+
+method `$`*(expression: Grouping): string = "Grouping(" & $expression.expression & ")"
+
+method `$`*(expression: Literal): string =
+    result = "Literal("
+    case expression.kind
+    of lkNumber: result &= $expression.numValue
+    of lkText: result &= expression.textValue
+    of lkTruth: result &= $expression.truthValue
+    else: discard
+    result &= ")"
+
+method `$`*(expression: Variable): string = "Var(" & $expression.name.lexeme & ")"
+
+method `$`*(expression: Assign): string = "Assign(" & expression.name.lexeme & ", " & $expression.value & ")"
+
+method `$`*(expression: Logical): string =
+    return "Logical(" & $expression.left & ", " & expression.operator.lexeme & ", " & $expression.right & ")"
+
+method `$`*(expression: Call): string =
+    return "Call()"
+
+#[
+    Statements
+]#
+type
     Stmt* = ref object of RootObj
 
     ExprStmt* = ref object of Stmt
@@ -75,28 +103,9 @@ type
         parameters*: seq[Token]
         body*: seq[Stmt]
 
-method `$`*(expression: Expr): string {.base.} = "Expression()"
-
-method `$`*(expression: Binary): string =
-    return "Binary(" & $expression.left & ", " & expression.operator.lexeme & ", " & $expression.right & ")"
-
-method `$`*(expression: Variable): string =
-    return "Var(" & $expression.name & ")"
-
-method `$`*(expression: Unary): string =
-    return "Unary(" & expression.operator.lexeme & ", " & $expression.right & ")"
-
-method `$`*(expression: Grouping): string =
-    return "Grouping(" & $expression.expression & ")"
-
-method `$`*(expression: Literal): string =
-    result = "Literal("
-    case expression.kind
-    of lkNumber: result &= $expression.numValue
-    of lkText: result &= expression.textValue
-    of lkTruth: result &= $expression.truthValue
-    else: discard
-    result &= ")"
+    ReturnStmt* = ref object of Stmt
+        keyword*: Token
+        value*: Expr
 
 method `$`*(statement: Stmt): string {.base.} = "Statement()"
 
@@ -119,4 +128,6 @@ method `$`*(statement: WhileStmt): string =
     return "While(" & $statement.condition & ", " & $statement.body & ")"
 
 method `$`*(statement: ActionStmt): string =
-    return "Action(" & $statement.name & ", " & $statement.parameters & ", " & $statement.body & ")"
+    return "Action(" & $statement.name.lexeme & ", " & $statement.parameters.map((p) => p.lexeme) & ")"
+
+method `$`*(statement: ReturnStmt): string = "Return(" & $statement.keyword & ")"

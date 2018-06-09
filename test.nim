@@ -1,4 +1,6 @@
-var i, res = 0.0
-while i < 10000:
-    res = res + i * 2
-    i = i + 1
+proc fib(n: int): int =
+    if n < 2:
+        return n
+    return fib(n - 1) + fib(n - 2)
+
+echo fib(40)

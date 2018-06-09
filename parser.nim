@@ -214,6 +214,15 @@ proc blockStatement(parser: Parser): seq[Stmt] =
         result.add(parser.declaration)
     discard parser.consume(RIGHT_BRACE, "Expect '}' after block")
 
+proc returnStatement(parser: Parser): Stmt =
+    var
+        keyword = parser.previous
+        value: Expr = nil
+    if not parser.check(DOT):
+        value = parser.expression
+    discard parser.consume(DOT, "Expect '.' after return value.")
+    return ReturnStmt(keyword: keyword, value: value);
+
 proc whileStatement(parser: Parser): Stmt =
     discard parser.consume(LEFT_PAREN, "Expect '(' after while")
     var condition = parser.expression
@@ -228,6 +237,8 @@ proc statement(parser: Parser): Stmt =
         return parser.ifStatement
     elif parser.match(SHOW):
         return parser.showStatement
+    elif parser.match(RETURN):
+        return parser.returnStatement
     elif parser.match(WHILE):
         return parser.whileStatement
     elif parser.match(LEFT_BRACE):
@@ -245,7 +256,7 @@ proc varDeclaration(parser: Parser): Stmt =
 proc actionDeclaration(parser: Parser): Stmt =
     var name = parser.consume(IDENTIFIER, "Expect an action name")
     discard parser.consume(LEFT_PAREN, "Expect '(' after action name.")
-    var parameters: seq[Token]
+    var parameters: seq[Token] = @[]
     if not parser.check(RIGHT_PAREN):
         if parameters.len >= 32:
             logger.error(

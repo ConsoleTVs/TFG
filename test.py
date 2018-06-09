@@ -1,6 +1,16 @@
-i = 0.0
-res = 0.0
-while i < 10000:
-    res = res + i * 2
-    i = i + 1
-print(res)
+def fib(n):
+    #print("== N ==")
+    #print(str(n))
+    if n < 2:
+        #print("== RET ==")
+        #print(str(n))
+        return n
+    #print("== CALLER1 ==")
+    #print(n - 2)
+    #print("== CALLER2 ==")
+    #print(n - 1)
+    res = fib(n - 2) + fib(n - 1)
+    #print("== RES ==")
+    #print(str(res))
+    return res
+print(fib(30))

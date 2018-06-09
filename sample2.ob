@@ -1,12 +1,15 @@
-var i = 0.
-while (i < 1000) {
-    if (i == 3) {
-        show "Eii fiera, k es un 3".
-    } else {
-        show i.
+action test(n) {
+    show n.
+    var lower = false.
+    if (n < 2) {
+        show "LOWER".
+        lower = true.
+        return n.
+        show "NO PLS".
     }
-    i = i + 1.
+    if (lower) {
+        show "FUUUU".
+    }
+    return test(n - 1).
 }
-//show "Ended".
-show time().
-show cpuTime().
+test(20).

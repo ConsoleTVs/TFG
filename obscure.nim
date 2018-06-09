@@ -1,4 +1,4 @@
-import parseopt, lexer, parser, rules, interpreter, logs, enviroment, tables, callable
+import parseopt, lexer, parser, rules, interpreter, logs, environment, tables, callable, backend_types
 
 proc run(source: string) =
     # The magic starts here
@@ -25,19 +25,31 @@ proc run(source: string) =
     logger.success("Starting semantic and code evaluation...", debug = true)
 
     var
-        enviroment = Enviroment(values: initTable[string, Value]())
-        globals = Enviroment(values: initTable[string, Value]())
+        environment = Environment(values: initTable[string, Value]())
+        globals = Environment(values: initTable[string, Value]())
         interpreter = Interpreter(
             globals: globals,
-            enviroment: enviroment
+            environment: environment
         )
 
     # Native functions
-    enviroment.define("time", Time(
+    globals.define("time", Time(
         arity: 0
     ))
-    enviroment.define("cpuTime", CpuTime(
+    globals.define("cpuTime", CpuTime(
         arity: 0
+    ))
+    globals.define("sleep", Sleep(
+        arity: 1
+    ))
+    environment.define("time", Time(
+        arity: 0
+    ))
+    environment.define("cpuTime", CpuTime(
+        arity: 0
+    ))
+    environment.define("sleep", Sleep(
+        arity: 1
     ))
 
     interpreter.interpret(statements)
