@@ -221,7 +221,7 @@ proc returnStatement(parser: Parser): Stmt =
     if not parser.check(DOT):
         value = parser.expression
     discard parser.consume(DOT, "Expect '.' after return value.")
-    return ReturnStmt(keyword: keyword, value: value);
+    return ReturnStmt(keyword: keyword, value: value)
 
 proc whileStatement(parser: Parser): Stmt =
     discard parser.consume(LEFT_PAREN, "Expect '(' after while")

@@ -86,7 +86,7 @@ proc identifier(lexer: var Lexer) =
 proc scanToken(lexer: var Lexer) =
     var c = lexer.advance
     # Diferent cases for the current character
-    case c
+    case c:
         of '"': lexer.text
         of '(': lexer.addToken(LEFT_PAREN)
         of ')': lexer.addToken(RIGHT_PAREN)

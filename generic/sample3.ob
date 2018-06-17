@@ -15,4 +15,7 @@ action fib(n) {
     //show res.
     return res.
 }
-show fib(30).
+var t1 = time().
+show fib(25).
+show time() - t1.
+show cpuTime().

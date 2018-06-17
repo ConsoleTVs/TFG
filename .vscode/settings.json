@@ -1,3 +1,7 @@
 {
-    "python.linting.pylintEnabled": false
+    "python.linting.pylintEnabled": false,
+    "files.exclude": {
+        "void\\src/nimcache/": true,
+        "generic/nimcache/": true
+    }
 }
