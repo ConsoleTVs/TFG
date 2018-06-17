@@ -127,7 +127,7 @@ method `$`*(t: If): string =
         result &= ", " & $t.elseBranch
     result &= ")"
 
-method `$`*(t: SimpleIf): string = "SimpleIf(" & $t.condition & $t.expression & ")"
+method `$`*(t: SimpleIf): string = "SimpleIf(" & $t.condition & ", " & $t.expression & ")"
 
 method `$`*(t: While): string = "While(" & $t.condition & ", " & $t.body & ")"
 
