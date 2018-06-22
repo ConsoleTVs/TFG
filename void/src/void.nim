@@ -1,4 +1,4 @@
-import parseopt, lexer, rules, parser
+import parseopt, lexer, rules, parser, vm, instructions, values, codegen
 #[
     Void Programming Language
     Copyright 2018 Erik Campobadal Forés <soc@erik.cat>
@@ -14,6 +14,23 @@ proc run(input: string) =
 
     for statement in ast:
         echo $statement
+
+    var instructions: seq[Instruction] = @[]
+    #[
+        instructions.add(PushInst(value: NumberValue(value: 500)))
+        instructions.add(PushInst(value: NumberValue(value: 10)))
+        instructions.add(PushInst(value: NumberValue(value: 5)))
+        instructions.add(AdditionInst())
+        instructions.add(PushInst(value: NumberValue(value: 10)))
+        instructions.add(SubstractionInst())
+        instructions.add(PrintInst())
+        instructions.add(DivisionInst())
+    ]#
+    var vm = newVM(@[])
+    for i in ast:
+        vm.codegen(i)
+    vm.init
+    vm.dumpStack
 
 proc file(sourceFile: string) =
     var source: string
