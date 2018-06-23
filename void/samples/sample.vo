@@ -16,7 +16,7 @@ print Collection([1, 2, 3, 4]).map((item) -> item * 2).items;
 test = () -> { 'sample': 123 };
 
 # Is the same as:
-test2 = () => { return { 'sample': 123 } };
+test2 = () => { return { 'sample': 123 }; };
 
 # Example addition
 add = (a, b) -> a + b;

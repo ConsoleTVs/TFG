@@ -293,7 +293,7 @@ proc blockStatement(parser: Parser): Block =
     var statements: seq[Statement] = @[]
     while not parser.check(TOK_RIGHT_BRACE) and not parser.isAtEnd:
         statements.add(parser.statement)
-    discard parser.consume(TOK_RIGHT_BRACE, "Expect '}' after block")
+    discard parser.consume(TOK_RIGHT_BRACE, "Unterminated block statement")
     result = Block(body: statements)
 
 proc ifStatement(parser: Parser): Statement =
@@ -308,12 +308,15 @@ proc ifStatement(parser: Parser): Statement =
         return SimpleIf(condition: condition, expression: parser.expression)
     elif parser.match(TOK_ARROW):
         var res = If(condition: condition)
+        discard parser.consume(TOK_LEFT_BRACE, "Expected a block after a '=>' function")
         res.thenBranch = parser.blockStatement
         res.elseBranch = nil
         if parser.match(TOK_ELSE):
+            discard parser.consume(TOK_ARROW, "Expected an arrow '=>' after an 'else'.")
+            discard parser.consume(TOK_LEFT_BRACE, "Expected a block after the function 'else =>' statement")
             res.elseBranch = parser.blockStatement
         return res
-    echo "Expected an arrow '=>' or a simple arrow '->' after an if expression."
+    echo "Expected an arrow '=>' or a simple arrow '->' after an 'if'."
     quit()
 
 proc whileStatement(parser: Parser): Statement =
