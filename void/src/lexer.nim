@@ -26,7 +26,7 @@ proc newLexer*(source: string): Lexer =
     result.tokens = @[]
     result.start = 0
     result.current = 0
-    result.line = 0
+    result.line = 1
 
 proc isAtEnd(lexer: Lexer): bool = lexer.current >= lexer.source.len
 

@@ -62,3 +62,14 @@ method codegen*(vm: VM, e: If) =
         vm.program.add(BranchNotInstruction(marker: endMarkerNumber))
         vm.codegen(e.thenBranch)
         vm.pushMarker(endMarker)
+
+method codegen*(vm: VM, e: While) =
+    let
+        (startMarker, startMarkerNumber) = vm.createMarker
+        (endMarker, endMarkerNumber) = vm.createMarker
+    vm.pushMarker(startMarker)
+    vm.codegen(e.condition)
+    vm.program.add(BranchNotInstruction(marker: endMarkerNumber))
+    vm.codegen(e.body)
+    vm.program.add(JumpInst(marker: startMarkerNumber))
+    vm.pushMarker(endMarker)

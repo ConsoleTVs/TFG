@@ -321,6 +321,8 @@ proc ifStatement(parser: Parser): Statement =
 
 proc whileStatement(parser: Parser): Statement =
     var condition = parser.expression
+    discard parser.consume(TOK_ARROW, "Expected an arrow '=>' after while expression")
+    discard parser.consume(TOK_LEFT_BRACE, "Expected an arrow '{' after while expression")
     return While(
         condition: condition,
         body: parser.blockStatement
