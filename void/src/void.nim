@@ -29,11 +29,11 @@ proc run(input: string) =
 
     var
         vm: VM = newVM(@[])
-        #bytecode: Bytecode = (vm: vm)
+        bytecode: Bytecode = (vm: vm)
     for i in ast:
         vm.codegen(i)
-    #vm.program.add(newInstruction(HALTINST))
-    #bytecode.save
+    vm.program.add(newInstruction(HALTINST))
+    bytecode.save
     vm.run
     #vm.dumpStack
 

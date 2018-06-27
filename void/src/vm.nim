@@ -46,7 +46,7 @@ proc findLabels(vm: VM) =
 
 proc run*(vm: VM) =
     vm.findLabels
-    while vm.pc < vm.program.len:
+    while vm.pc < vm.program.len - 1:
         vm.pc.inc
         case vm.program[vm.pc].kind:
             of HALTINST: return

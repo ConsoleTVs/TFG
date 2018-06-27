@@ -1,24 +1,25 @@
 *main:
 	PUSH 0.0
 	STORE "a"
+	PUSH 0.0
+	STORE "b"
 *_0:
 	LOAD "a"
-	PUSH 300000.0
+	PUSH 3000000.0
 	LT
 	BRANCHF "*_1"
 	LOAD "a"
+	LOAD "b"
 	PUSH 2.0
-	MOD
-	PUSH 0.0
-	EQ
-	BRANCHF "*_2"
-*_2:
+	DIV
+	SUB
+	STORE "b"
 	LOAD "a"
 	PUSH 1.0
 	ADD
 	STORE "a"
 	JUMP "*_0"
 *_1:
-	PUSH "OK"
+	LOAD "b"
 	PRINT
 	HALT
