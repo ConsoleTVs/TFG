@@ -127,7 +127,6 @@ proc primary(parser: Parser): Expression =
             var expression = parser.expression
             discard parser.consume(TOK_RIGHT_PAREN, "Expected ')' after the expression")
             return Group(expression: expression)
-
     echo "Expected an expression. Failed with the lexeme " & parser.peek.lexeme & " at line " & $parser.peek.line
     quit()
 
@@ -297,17 +296,19 @@ proc blockStatement(parser: Parser): Block =
 
 proc ifStatement(parser: Parser): Statement =
     ##[
-        ifStatement: "if" expression "->" expression
-            | "if" expression "=>" blockStatement ("else" -> expression)?
-            | "if" expression "=>" blockStatement ("else" => blockStatement)?
+        ifStatement: "if" "(" expression ")" "->" expression
+            | "if" "(" expression ")" "=>" blockStatement ("else" -> "(" expression ")")?
+            | "if" "(" expression ")" "=>" blockStatement ("else" => blockStatement)?
             ;
     ]##
+    discard parser.consume(TOK_LEFT_PAREN, "Expected a '(' after 'if'.")
     var condition = parser.expression
+    discard parser.consume(TOK_RIGHT_PAREN, "Expected a ')' after 'if' expression.")
     if parser.match(TOK_SIMPLE_ARROW):
         return SimpleIf(condition: condition, expression: parser.expression)
     elif parser.match(TOK_ARROW):
         var res = If(condition: condition)
-        discard parser.consume(TOK_LEFT_BRACE, "Expected a block after a '=>' function")
+        discard parser.consume(TOK_LEFT_BRACE, "Expected a block after a '=>' if")
         res.thenBranch = parser.blockStatement
         res.elseBranch = nil
         if parser.match(TOK_ELSE):
@@ -319,9 +320,11 @@ proc ifStatement(parser: Parser): Statement =
     quit()
 
 proc whileStatement(parser: Parser): Statement =
+    discard parser.consume(TOK_LEFT_PAREN, "Expected a '(' after 'while'.")
     var condition = parser.expression
-    discard parser.consume(TOK_ARROW, "Expected an arrow '=>' after while expression")
-    discard parser.consume(TOK_LEFT_BRACE, "Expected an arrow '{' after while expression")
+    discard parser.consume(TOK_RIGHT_PAREN, "Expected a ')' after 'while' expression.")
+    discard parser.consume(TOK_ARROW, "Expected an arrow '=>' after 'while' expression")
+    discard parser.consume(TOK_LEFT_BRACE, "Expected an arrow '{' after 'while' expression")
     return While(
         condition: condition,
         body: parser.blockStatement

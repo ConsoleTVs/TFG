@@ -3,7 +3,7 @@ class Collection = (items) -> self.items = items;
 
 # Declaring class functions
 Collection.map = (callback) => {
-    for item in self.items -> callaback(item);
+    for (item in self.items) -> callaback(item);
 };
 
 # Should be the same as
@@ -23,12 +23,9 @@ add = (a, b) -> a + b;
 
 # Example funciton with control flow
 example = (n) => {
-    if n < 10 => {
+    if (n < 10) => {
         return n;
     } else => {
         return n - 10;
     }
 }
-
-# Same function as above
-example2 = (n) -> if n < 10 -> n else -> n - 10;
