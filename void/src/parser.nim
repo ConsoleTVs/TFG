@@ -1,4 +1,4 @@
-import tokens, rules, strutils
+import tokens, rules, strutils, values
 
 type
     Parser* = ref tuple
@@ -107,15 +107,15 @@ proc primary(parser: Parser): Expression =
             ;
     ]##
     if parser.match(TOK_FALSE):
-        return Boolean(value: false)
+        return Boolean(value: BooleanValue(value: false))
     if parser.match(TOK_TRUE):
-        return Boolean(value: true)
+        return Boolean(value: BooleanValue(value: true))
     if parser.match(TOK_NONE):
         return None()
     if parser.match(TOK_NUMBER):
-        return Number(value: parser.previous.value.parseFloat)
+        return Number(value: NumberValue(value: parser.previous.value.parseFloat))
     if parser.match(TOK_STRING):
-        return String(value: parser.previous.value)
+        return String(value: StringValue(value: parser.previous.value))
     if parser.match(TOK_IDENTIFIER):
         return Variable(name: parser.previous)
     if parser.match(TOK_NONE):

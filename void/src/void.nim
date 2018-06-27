@@ -1,4 +1,4 @@
-import parseopt, lexer, rules, parser, vm2, instructions2, values, codegen2, bytecode2
+import parseopt, lexer, rules, parser, vm, instructions, values, codegen, bytecode
 #[
     Void Programming Language
     Copyright 2018 Erik Campobadal Forés <soc@erik.cat>

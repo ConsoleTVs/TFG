@@ -1,106 +1,143 @@
-import values
+import values, strutils, math
+
+##[
+    This module implements all the possible instructions and the
+    common operations done on them that the void programming language
+    currently supports.
+]##
 
 type
-    Instruction* = ref object of RootObj
+    InstructionKind* = enum
+        ##[
+            This instructions define all the possible operations
+            of the void bytecode VM. The string they are equal to
+            is not the value, it's a string representation of
+            the enum, same as definint each `$` operator.
+        ]##
+        HALTINST = "HALT" # Halt
+        PUSHINST = "PUSH" # Push
+        POPINST = "POP" # Pop
+        NOPINST = "NOP" # No operation
+        LABELINST = "" # Label
+        PRINTINT = "PRINT" # Print
+        VALUEINST = "" # Value representation
+        NEGINST = "NEG" # Negation (numeric)
+        NOTINST = "NOT" # Negation (boolean)
+        ORINST = "OR" # Logic or
+        ANDINST = "AND" # Logic and
+        ADDINST = "ADD" # Addition
+        SUBINST = "SUB" # Substraction
+        MULINST = "MUL" # Multiplication
+        DIVINST = "DIV" # Division
+        MODINST = "MOD" # Modulo
+        EQINST = "EQ" # Equal
+        NEQINST = "NEQ" # Not equal
+        GTINST = "GT" # Greater than
+        GTEINST = "GTE" # Greater or equal than
+        LTINST = "LT" # Lower than
+        LTEINST = "LTE" # Lower or equal than
+        JUMPINST = "JUMP" # Jump
+        RJUMPINST = "RJUMP" # Relative Jump
+        BRANCHTINST = "BRANCHT" # Branch if true
+        BRANCHFINST = "BRANCHF" # Branch if false
+        STOREINST = "STORE" # Store
+        LOADINST = "LOAD" # Load
 
-    Marker* = ref object of Instruction # Not really an instruction tho...
-        pc*: int # Program counter where the marker is
+    Instruction* = ref tuple
+        ##[
+            Representation of the instruction consists of a kind
+            of instruction and a value that might be associated with it.
+        ]##
+        kind: InstructionKind # The instruction kind
+        value: Value # The value of the instruction if any
 
-    PushInst* = ref object of Instruction
-        value*: Value
+proc newInstruction*(kind: InstructionKind, value: Value = nil): Instruction =
+    new result
+    result.kind = kind
+    result.value = value
 
-    PopInst* = ref object of Instruction
+##[
+    Instruction functions that are used during the VM running state.
+    These functions will be called when needed by passing the value arguments to it.
+]##
 
-    JumpInst* = ref object of Instruction
-        marker*: int # Marker to jump to
+proc abort(msg: string) = echo msg; quit()
 
-    PrintInst* = ref object of Instruction
+method negInst*(a: Value): Value {.base.} = "Invalid value in neg operation".abort
+method negInst*(a: NumberValue): Value = NumberValue(value: -a.value)
+method negInst*(a: BooleanValue): Value = NumberValue(value: -float(a.value))
 
-    #Binary instructions (pop 2 from stack)
-    AdditionInst* = ref object of Instruction
-    SubtractionInst* = ref object of Instruction
-    MultiplicationInst* = ref object of Instruction
-    DivisionInst* = ref object of Instruction
-    EqualInst* = ref object of Instruction
-    NotEqualInst* = ref object of Instruction
-    GreaterInst* = ref object of Instruction
-    GreaterEqualInst* = ref object of Instruction
-    LessInst* = ref object of Instruction
-    LessEqualInst* = ref object of Instruction
+method notInst*(a: Value): Value {.base.} = "Invalid value in not operation".abort
+method notInst*(a: NumberValue): Value = BooleanValue(value: not bool(a.value))
+method notInst*(a: BooleanValue): Value = BooleanValue(value: not a.value)
 
-    BranchInstruction* = ref object of Instruction
-        marker*: int
-    BranchNotInstruction* = ref object of Instruction
-        marker*: int
+method orInst*(a, b: Value): Value {.base.} = "Invalid value in or operation".abort
+method orInst*(a, b: NumberValue): Value = BooleanValue(value: bool(b.value) or bool(a.value))
+method orInst*(a, b: BooleanValue): Value = BooleanValue(value: b.value or a.value)
 
-    PushScopeInst* = ref object of Instruction
+method andInst*(a, b: Value): Value {.base.} = "Invalid value in or operation".abort
+method andInst*(a, b: NumberValue): Value = BooleanValue(value: bool(b.value) and bool(a.value))
+method andInst*(a, b: BooleanValue): Value = BooleanValue(value: b.value and a.value)
 
-    PopScopeInst* = ref object of Instruction
+method addInst*(a, b: Value): Value {.base.} = "Invalid values in add instruction".abort
+method addInst*(a, b: NumberValue): Value = NumberValue(value: b.value + a.value)
+method addInst*(a, b: BooleanValue): Value = NumberValue(value: float(b.value) + float(a.value))
+method addInst*(a, b: StringValue): Value = StringValue(value: b.value & a.value)
 
-    AssignInst* = ref object of Instruction
-        name*: string
+method subInst*(a, b: Value): Value {.base.} = "Invalid values in sub instruction".abort
+method subInst*(a, b: NumberValue): Value = NumberValue(value: b.value - a.value)
+method subInst*(a, b: BooleanValue): Value = NumberValue(value: float(b.value) - float(a.value))
 
-    VariableInst* = ref object of Instruction
-        name*: string
+method mulInst*(a, b: Value): Value {.base.} = "Invalid values in mul instruction".abort
+method mulInst*(a, b: NumberValue): Value = NumberValue(value: b.value * a.value)
+method mulInst*(a, b: BooleanValue): Value = NumberValue(value: float(b.value) * float(a.value))
+method mulInst*(a: NumberValue, b: StringValue): Value = StringValue(value: b.value.repeat(Natural(a.value)))
+method mulInst*(a: StringValue, b: NumberValue): Value = StringValue(value: a.value.repeat(Natural(b.value)))
 
-method printInst*(a: Value) {.base.} = echo $a
+method divInst*(a, b: Value): Value {.base.} = "Invalid values in div instruction".abort
+method divInst*(a, b: NumberValue): Value = NumberValue(value: b.value / a.value)
+method divInst*(a, b: BooleanValue): Value = NumberValue(value: float(b.value) / float(a.value))
 
-method additionInst*(a, b: Value): Value {.base.} =
-    echo "Wrong addition instruction"
-    quit()
-method additionInst*(a, b: NumberValue): Value = NumberValue(value: b.value + a.value)
+method modInst*(a, b: Value): Value {.base.} = "Invalid values in mod instruction".abort
+method modInst*(a, b: NumberValue): Value = NumberValue(value: b.value mod a.value)
+method modInst*(a, b: BooleanValue): Value = NumberValue(value: float(b.value) mod float(a.value))
 
-method substractionInst*(a, b: Value): Value {.base.} =
-    echo "Wrong substraction instruction"
-    quit()
-method substractionInst*(a, b: NumberValue): Value = NumberValue(value: b.value - a.value)
+method eqInst*(a, b: Value): Value {.base.} = "Invalid values in div instruction".abort
+method eqInst*(a, b: NumberValue): Value = BooleanValue(value: b.value == a.value)
+method eqInst*(a, b: BooleanValue): Value = BooleanValue(value: b.value == a.value)
+method eqInst*(a, b: StringValue): Value = BooleanValue(value: b.value == a.value)
 
-method multiplicationInst*(a, b: Value): Value {.base.} =
-    echo "Wrong multiplication instruction"
-    quit()
-method multiplicationInst*(a, b: NumberValue): Value = NumberValue(value: b.value * a.value)
+method neqInst*(a, b: Value): Value {.base.} = "Invalid values in div instruction".abort
+method neqInst*(a, b: NumberValue): Value = BooleanValue(value: b.value != a.value)
+method neqInst*(a, b: BooleanValue): Value = BooleanValue(value: b.value != a.value)
+method neqInst*(a, b: StringValue): Value = BooleanValue(value: b.value != a.value)
 
-method divisionInst*(a, b: Value): Value {.base.} =
-    echo "Wrong division instruction"
-    quit()
-method divisionInst*(a, b: NumberValue): Value = NumberValue(value: b.value / a.value)
+method gtInst*(a, b: Value): Value {.base.} = "Invalid values in div instruction".abort
+method gtInst*(a, b: NumberValue): Value = BooleanValue(value: b.value > a.value)
+method gtInst*(a, b: BooleanValue): Value = BooleanValue(value: b.value > a.value)
+method gtInst*(a, b: StringValue): Value = BooleanValue(value: b.value > a.value)
 
-method equalInst*(a, b: Value): Value {.base.} =
-    echo "Wrong equal instruction"
-    quit()
-method equalInst*(a, b: NumberValue): Value = BooleanValue(value: a.value == b.value)
+method gteInst*(a, b: Value): Value {.base.} = "Invalid values in div instruction".abort
+method gteInst*(a, b: NumberValue): Value = BooleanValue(value: b.value >= a.value)
+method gteInst*(a, b: BooleanValue): Value = BooleanValue(value: b.value >= a.value)
+method gteInst*(a, b: StringValue): Value = BooleanValue(value: b.value >= a.value)
 
-method notEqualInst*(a, b: Value): Value {.base.} =
-    echo "Wrong not equal instruction"
-    quit()
-method notEqualInst*(a, b: NumberValue): Value = BooleanValue(value: a.value != b.value)
+method ltInst*(a, b: Value): Value {.base.} = "Invalid values in div instruction".abort
+method ltInst*(a, b: NumberValue): Value = BooleanValue(value: b.value < a.value)
+method ltInst*(a, b: BooleanValue): Value = BooleanValue(value: b.value < a.value)
+method ltInst*(a, b: StringValue): Value = BooleanValue(value: b.value < a.value)
 
-method greaterInst*(a, b: Value): Value {.base.} =
-    echo "Wrong greater instruction"
-    quit()
-method greaterInst*(a, b: NumberValue): Value = BooleanValue(value: b.value > a.value)
+method lteInst*(a, b: Value): Value {.base.} = "Invalid values in div instruction".abort
+method lteInst*(a, b: NumberValue): Value = BooleanValue(value: b.value <= a.value)
+method lteInst*(a, b: BooleanValue): Value = BooleanValue(value: b.value <= a.value)
+method lteInst*(a, b: StringValue): Value = BooleanValue(value: b.value <= a.value)
 
-method greaterEqualInst*(a, b: Value): Value {.base.} =
-    echo "Wrong greater equal instruction"
-    quit()
-method greaterEqualInst*(a, b: NumberValue): Value = BooleanValue(value: b.value >= a.value)
+method branchtInst*(a: Value): bool {.base.} = "Wrong branch instruction".abort
+method branchtInst*(a: NumberValue): bool = bool(a.value)
+method branchtInst*(a: BooleanValue): bool = a.value
+method branchtInst*(a: StringValue): bool = bool(a.value.len)
 
-method lessInst*(a, b: Value): Value {.base.} =
-    echo "Wrong less instruction"
-    quit()
-method lessInst*(a, b: NumberValue): Value = BooleanValue(value: b.value < a.value)
-
-method lessEqualInst*(a, b: Value): Value {.base.} =
-    echo "Wrong less equal instruction"
-    quit()
-method lessEqualInst*(a, b: NumberValue): Value = BooleanValue(value: b.value >= a.value)
-
-method branchInstruction*(a: Value): bool {.base.} =
-    echo "Wrong branch instruction"
-    quit()
-method branchInstruction*(a: BooleanValue): bool = a.value
-
-method branchNotInstruction*(a: Value): bool {.base.} =
-    echo "Wrong branch not instruction"
-    quit()
-method branchNotInstruction*(a: BooleanValue): bool = not a.value
+method branchfInst*(a: Value): bool {.base.} = "Wrong branch not instruction".abort
+method branchfInst*(a: NumberValue): bool = not bool(a.value)
+method branchfInst*(a: BooleanValue): bool = not a.value
+method branchfInst*(a: StringValue): bool = not bool(a.value.len)

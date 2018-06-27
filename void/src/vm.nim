@@ -1,56 +1,37 @@
-import values, instructions, tables
+import tables, values, instructions
 
-##[
-    This module stores what's said to be an
-    implementation of the void virtual machin
-]##
+const
+    vm_label_prefix* = "*"
+    vm_temp_label_prefix* = "*_"
 
 type
     VM* = ref tuple
-        program: seq[Instruction] # Instructions
-        pc: int # Program counter
-        stack: seq[Value] # Stack
-        memory: seq[Table[string, Value]] # Program memory (scopes)
-        markers: seq[Marker] # Sequence of program counters where the marker is set
+        program: seq[Instruction] # Program instructions
+        stack: seq[Value] # Program instructions
+        heap: seq[Table[string, Value]] # VM Heap
+        labels: Table[string, int] # Labels (label -> pc)
+        pc, fp, temp_label_num: int # Program Counter, Frame Pointer, Helper to prefix temp labels and don't repeat any
 
 proc newVM*(program: seq[Instruction]): VM =
     new result
     result.program = program
-    result.pc = 0
     result.stack = @[]
-    result.memory = @[]
-    result.markers = @[]
-    result.memory.add(initTable[string, Value]())
+    result.pc = -1 # It increments on the first run to 0
+    result.fp = 0
+    result.temp_label_num = 0
+    result.heap = @[initTable[string, Value]()]
+    result.labels = initTable[string, int]()
 
-proc createMarker*(vm: VM): tuple[marker: Marker, markerNumber: int] =
-    vm.markers.add(Marker())
-    return (marker: vm.markers[vm.markers.len - 1], markerNumber: vm.markers.len - 1)
+proc tempLabel*(vm: VM): string = vm.temp_label_num.inc; vm_temp_label_prefix & $(vm.temp_label_num - 1)
 
-proc pushMarker*(vm: VM, marker: Marker) =
-    marker.pc = vm.program.len # We set the marker program counter
-    vm.program.add(marker)
+proc advance(vm: VM): Instruction =  vm.pc.inc; return vm.program[vm.pc]
 
-proc put*(vm: VM, name: string, value: Value) =
-    var current = vm.memory.len - 1
-    while current >= 0:
-        if vm.memory[current].hasKey(name):
-            vm.memory[current][name] = value
-            return
-        current.dec
-    vm.memory[vm.memory.len - 1][name] = value
+proc jump(vm: VM, i: Instruction) = vm.pc = int(NumberValue(i.value).value)
+proc labelJump(vm: VM, i: Instruction) = vm.pc = vm.labels[StringValue(i.value).value]
 
-proc get*(vm: VM, name: string): Value =
-    var current = vm.memory.len - 1
-    while current >= 0:
-        if vm.memory[current].hasKey(name):
-            return vm.memory[current][name]
-        current.dec
-    echo "Undefined variable " & name
-    quit()
+proc push(vm: VM, value: Value) = vm.stack.add(value)
 
-proc push*(vm: VM, value: Value) = vm.stack.add(value)
-
-proc pop*(vm: VM): Value =
+proc pop(vm: VM): Value =
     if vm.stack.len == 0:
         echo "Empty stack, can't pop"
         quit()
@@ -58,42 +39,52 @@ proc pop*(vm: VM): Value =
     vm.stack.delete(vm.stack.len - 1)
     return value
 
-proc jump(vm: VM, marker: int) = vm.pc = vm.markers[marker].pc
+proc findLabels(vm: VM) =
+    for i,e in vm.program:
+        if e.kind == LABELINST:
+            vm.labels[$e.value] = i
 
-proc current(vm: VM): Value = vm.stack[vm.stack.len - 1]
-
-method execute(vm: VM, instruction: Instruction) {.base.} =
-    echo "Generic instruction. Something went wrong..."
-    quit()
-method execute(vm: VM, instruction: Marker) = discard # Discard the marker
-method execute(vm: VM, instruction: PushInst) = vm.push(instruction.value)
-method execute(vm: VM, instruction: PopInst) = discard vm.pop
-method execute(vm: VM, instruction: JumpInst) = vm.jump(instruction.marker)
-method execute(vm: VM, instruction: PrintInst) = vm.pop.printInst
-method execute(vm: VM, instruction: AdditionInst) = vm.push(additionInst(vm.pop, vm.pop))
-method execute(vm: VM, instruction: SubtractionInst) = vm.push(substractionInst(vm.pop, vm.pop))
-method execute(vm: VM, instruction: MultiplicationInst) = vm.push(multiplicationInst(vm.pop, vm.pop))
-method execute(vm: VM, instruction: DivisionInst) = vm.push(divisionInst(vm.pop, vm.pop))
-method execute(vm: VM, instruction: EqualInst) = vm.push(equalInst(vm.pop, vm.pop))
-method execute(vm: VM, instruction: NotEqualInst) = vm.push(notEqualInst(vm.pop, vm.pop))
-method execute(vm: VM, instruction: GreaterInst) = vm.push(greaterInst(vm.pop, vm.pop))
-method execute(vm: VM, instruction: GreaterEqualInst) = vm.push(greaterEqualInst(vm.pop, vm.pop))
-method execute(vm: VM, instruction: LessInst) = vm.push(lessInst(vm.pop, vm.pop))
-method execute(vm: VM, instruction: LessEqualInst) = vm.push(lessEqualInst(vm.pop, vm.pop))
-method execute(vm: VM, instruction: BranchInstruction) =
-    if vm.pop.branchInstruction:
-        vm.jump(instruction.marker)
-method execute(vm: VM, instruction: BranchNotInstruction) =
-    if vm.pop.branchNotInstruction:
-        vm.jump(instruction.marker)
-method execute(vm: VM, instruction: PushScopeInst) = vm.memory.add(initTable[string, Value]())
-method execute(vm: VM, instruction: PopScopeInst) =
-    if vm.memory.len == 1:
-        echo "Can't pop the global scope"
-        quit()
-    vm.memory.delete(vm.memory.len - 1)
-method execute(vm: VM, instruction: AssignInst) = vm.put(instruction.name, vm.pop)
-method execute(vm: VM, instruction: VariableInst) = vm.push(vm.get(instruction.name))
+proc run*(vm: VM) =
+    vm.findLabels
+    while vm.pc < vm.program.len:
+        vm.pc.inc
+        case vm.program[vm.pc].kind:
+            of HALTINST: return
+            of NOPINST, LABELINST: discard # No Operation Instruction
+            of PRINTINT: echo vm.pop
+            of PUSHINST: vm.push(vm.advance.value)
+            of VALUEINST: discard # Values are used with the advance() proc and not as an instruction.
+            of POPINST: discard vm.pop # Kinda useless to pop without a reason tho...
+            of NEGINST: vm.push(negInst(vm.pop))
+            of NOTINST: vm.push(notInst(vm.pop))
+            of ORINST: vm.push(orInst(vm.pop, vm.pop))
+            of ANDINST: vm.push(andInst(vm.pop, vm.pop))
+            of ADDINST: vm.push(addInst(vm.pop, vm.pop))
+            of SUBINST: vm.push(subInst(vm.pop, vm.pop))
+            of MULINST: vm.push(mulInst(vm.pop, vm.pop))
+            of DIVINST: vm.push(divInst(vm.pop, vm.pop))
+            of MODINST: vm.push(modInst(vm.pop, vm.pop))
+            of EQINST: vm.push(eqInst(vm.pop, vm.pop))
+            of NEQINST: vm.push(neqInst(vm.pop, vm.pop))
+            of GTINST: vm.push(gtInst(vm.pop, vm.pop))
+            of GTEINST: vm.push(gteInst(vm.pop, vm.pop))
+            of LTINST: vm.push(ltInst(vm.pop, vm.pop))
+            of LTEINST: vm.push(lteInst(vm.pop, vm.pop))
+            of JUMPINST: vm.labelJump(vm.advance)
+            of RJUMPINST: vm.jump(vm.advance)
+            of BRANCHTINST:
+                let inst = vm.advance # Always consume the next instruction
+                if vm.pop.branchtInst:
+                    vm.labelJump(inst)
+            of BRANCHFINST:
+                let inst = vm.advance # Always consume the next instruction
+                if vm.pop.branchfInst:
+                    vm.labelJump(inst)
+            of STOREINST: vm.heap[vm.fp][StringValue(vm.advance.value).value] = vm.pop
+            of LOADINST: vm.push(vm.heap[vm.fp][StringValue(vm.advance.value).value])
+            else:
+                echo "Unknown operation " & $vm.program[vm.pc].kind
+                quit()
 
 proc dumpStack*(vm: VM) =
     echo ""
@@ -102,8 +93,3 @@ proc dumpStack*(vm: VM) =
     while current >= 0:
         echo $current & " -> " & $vm.stack[current]
         current.dec
-
-proc init*(vm: VM) =
-    while vm.pc < vm.program.len:
-        vm.execute(vm.program[vm.pc])
-        vm.pc.inc

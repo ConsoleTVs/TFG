@@ -1,4 +1,4 @@
-import tokens
+import tokens, values
 
 #[
     Base declaraions
@@ -13,13 +13,13 @@ type
 
 type
     Number* = ref object of Expression
-        value*: float
+        value*: NumberValue
 
     String* = ref object of Expression
-        value*: string
+        value*: StringValue
 
     Boolean* = ref object of Expression
-        value*: bool
+        value*: BooleanValue
 
     None* = ref object of Expression
 

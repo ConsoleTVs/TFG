@@ -1,75 +1,118 @@
-import rules, instructions, values, tokens, vm, typetraits
+import vm, instructions, values, rules, tokens
 
-method codegen*(vm: VM, e: Expression) {.base.} = vm.program.add(Instruction())
-method codegen*(vm: VM, e: Statement) {.base.} = vm.program.add(Instruction())
-method codegen*(vm: VM, e: Print) =
-    vm.codegen(e.expression)
-    vm.program.add(PrintInst())
-method codegen*(vm: VM, e: ExpressionStatement) = vm.codegen(e.expression)
-method codegen*(vm: VM, e: Number) = vm.program.add(PushInst(value: NumberValue(value: e.value)))
-method codegen*(vm: VM, e: Group) = vm.codegen(e.expression)
-method codegen*(vm: VM, e: Assign) =
-    vm.codegen(e.value)
-    vm.program.add(AssignInst(name: e.name.lexeme))
-method codegen*(vm: VM, e: Variable) = vm.program.add(VariableInst(name: e.name.lexeme))
-method codegen*(vm: VM, e: Block) =
-    vm.program.add(PushScopeInst())
-    for i in e.body:
-        vm.codegen(i)
-    vm.program.add(PopScopeInst())
-method codegen*(vm: VM, e: Binary) =
-    vm.codegen(e.left)
-    vm.codegen(e.right)
-    case e.operator.kind:
-        of TOK_PLUS: vm.program.add(AdditionInst())
-        of TOK_MINUS: vm.program.add(SubtractionInst())
-        of TOK_STAR: vm.program.add(MultiplicationInst())
-        of TOK_SLASH: vm.program.add(DivisionInst())
-        of TOK_EQUAL_EQUAL: vm.program.add(EqualInst())
-        of TOK_BANG_EQUAL: vm.program.add(NotEqualInst())
-        of TOK_GREATER: vm.program.add(GreaterInst())
-        of TOK_GREATER_EQUAL: vm.program.add(GreaterEqualInst())
-        of TOK_LESS: vm.program.add(LessInst())
-        of TOK_LESS_EQUAL: vm.program.add(LessEqualInst())
+proc add(vm: VM, kind: InstructionKind, value: Value = nil) = vm.program.add(newInstruction(kind, value))
+
+method codegen*(vm: VM, n: Expression) {.base.} = discard
+method codegen*(vm: VM, n: Statement) {.base.} = discard
+
+method codegen*(vm: VM, n: Number) =
+    vm.add(PUSHINST)
+    vm.add(VALUEINST, n.value)
+
+method codegen*(vm: VM, n: String) =
+    vm.add(PUSHINST)
+    vm.add(VALUEINST, n.value)
+
+method codegen*(vm: VM, n: Boolean) =
+    vm.add(PUSHINST)
+    vm.add(VALUEINST, n.value)
+
+method codegen*(vm: VM, n: None) =
+    vm.add(PUSHINST)
+    vm.add(VALUEINST, NoneValue())
+
+method codegen*(vm: VM, n: ExpressionStatement) = vm.codegen(n.expression)
+
+method codegen*(vm: VM, n: Group) = vm.codegen(n.expression)
+
+method codegen*(vm: VM, n: Unary) =
+    vm.codegen(n.right)
+    case n.operator.kind:
+        of TOK_BANG: vm.add(NOTINST)
+        of TOK_MINUS: vm.add(NEGINST)
+        else: echo "Error generating code for unary operator"; quit()
+
+method codegen*(vm: VM, n: Binary) =
+    vm.codegen(n.left)
+    vm.codegen(n.right)
+    case n.operator.kind:
+        of TOK_PLUS: vm.add(ADDINST)
+        of TOK_MINUS: vm.add(SUBINST)
+        of TOK_STAR: vm.add(MULINST)
+        of TOK_SLASH: vm.add(DIVINST)
+        of TOK_PERCENT: vm.add(MODINST)
+        of TOK_EQUAL_EQUAL: vm.add(EQINST)
+        of TOK_BANG_EQUAL: vm.add(NEQINST)
+        of TOK_GREATER: vm.add(GTINST)
+        of TOK_GREATER_EQUAL: vm.add(GTEINST)
+        of TOK_LESS: vm.add(LTINST)
+        of TOK_LESS_EQUAL: vm.add(LTEINST)
         else:
             echo "Error generating code for a binary operator"
             quit()
-method codegen*(vm: VM, e: SimpleIf) =
-    let (marker, markerNumber) = vm.createMarker
-    vm.codegen(e.condition)
-    vm.program.add(BranchNotInstruction(marker: markerNumber))
-    vm.codegen(e.expression)
-    vm.pushMarker(marker)
 
-method codegen*(vm: VM, e: If) =
-    if e.elseBranch != nil:
-        # That means the if have then and else branch
-        let
-            (thenMarker, thenMarkerNumber) = vm.createMarker
-            (endMarker, endMarkerNumber) = vm.createMarker
-        vm.codegen(e.condition)
-        vm.program.add(BranchInstruction(marker: thenMarkerNumber))
-        vm.codegen(e.elseBranch)
-        vm.program.add(JumpInst(marker: endMarkerNumber))
-        vm.pushMarker(thenMarker)
-        vm.codegen(e.thenBranch)
-        vm.pushMarker(endMarker)
+method codegen*(vm: VM, n: Variable) =
+    vm.add(LOADINST)
+    vm.add(VALUEINST, StringValue(value: n.name.lexeme))
+
+method codegen*(vm: VM, n: Assign) =
+    vm.codegen(n.value)
+    vm.add(STOREINST)
+    vm.add(VALUEINST, StringValue(value: n.name.lexeme))
+
+method codegen*(vm: VM, n: Logical) =
+    vm.codegen(n.left)
+    vm.codegen(n.right)
+    case n.operator.kind:
+        of TOK_OR: vm.add(ORINST)
+        of TOK_AND: vm.add(ANDINST)
+        else:
+            echo "Error generating code for a logical operator"
+            quit()
+
+method codegen*(vm: VM, n: Print) =
+    vm.codegen(n.expression)
+    vm.add(PRINTINT)
+
+method codegen*(vm: VM, n: Block) =
+    for i in n.body:
+        vm.codegen(i)
+
+method codegen*(vm: VM, n: SimpleIf) =
+    vm.codegen(n.condition)
+    let label = vm.tempLabel
+    vm.add(BRANCHFINST)
+    vm.add(VALUEINST, StringValue(value: label))
+    vm.codegen(n.expression)
+    vm.add(LABELINST, StringValue(value: label))
+
+method codegen*(vm: VM, n: If) =
+    if n.elseBranch == nil:
+        vm.codegen(n.condition)
+        let endLabel = vm.tempLabel
+        vm.add(BRANCHFINST)
+        vm.add(VALUEINST, StringValue(value: endLabel))
+        vm.codegen(n.thenBranch)
+        vm.add(LABELINST, StringValue(value: endLabel))
     else:
-        # That means the if have only a then branch
-        let
-            (endMarker, endMarkerNumber) = vm.createMarker
-        vm.codegen(e.condition)
-        vm.program.add(BranchNotInstruction(marker: endMarkerNumber))
-        vm.codegen(e.thenBranch)
-        vm.pushMarker(endMarker)
+        vm.codegen(n.condition)
+        let elseLabel, endLabel = vm.tempLabel
+        vm.add(BRANCHFINST)
+        vm.add(VALUEINST, StringValue(value: elseLabel))
+        vm.codegen(n.thenBranch)
+        vm.add(JUMPINST)
+        vm.add(VALUEINST, StringValue(value: endLabel))
+        vm.add(LABELINST, StringValue(value: elseLabel))
+        vm.codegen(n.elseBranch)
+        vm.add(LABELINST, StringValue(value: endLabel))
 
-method codegen*(vm: VM, e: While) =
-    let
-        (startMarker, startMarkerNumber) = vm.createMarker
-        (endMarker, endMarkerNumber) = vm.createMarker
-    vm.pushMarker(startMarker)
-    vm.codegen(e.condition)
-    vm.program.add(BranchNotInstruction(marker: endMarkerNumber))
-    vm.codegen(e.body)
-    vm.program.add(JumpInst(marker: startMarkerNumber))
-    vm.pushMarker(endMarker)
+method codegen*(vm: VM, n: While) =
+    let startLabel, endLabel = vm.tempLabel
+    vm.add(LABELINST, StringValue(value: startLabel))
+    vm.codegen(n.condition)
+    vm.add(BRANCHFINST)
+    vm.add(VALUEINST, StringValue(value: endLabel))
+    vm.codegen(n.body)
+    vm.add(JUMPINST)
+    vm.add(VALUEINST, StringValue(value: startLabel))
+    vm.add(LABELINST, StringValue(value: endLabel))
