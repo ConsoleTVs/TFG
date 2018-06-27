@@ -175,13 +175,13 @@ proc unary(parser: Parser): Expression =
         )
     return parser.call
 
-proc mulDiv(parser: Parser): Expression =
+proc mulDivMod(parser: Parser): Expression =
     ##[
-        mulDiv: unary (("/" | "*") unary)*
+        mulDivMod: unary (("/" | "*" | "%") unary)*
             ;
     ]##
     result = parser.unary
-    while parser.match(TOK_SLASH, TOK_STAR):
+    while parser.match(TOK_SLASH, TOK_STAR, TOK_PERCENT):
         result = Binary(
             left: result,
             operator: parser.previous,
@@ -190,15 +190,15 @@ proc mulDiv(parser: Parser): Expression =
 
 proc addition(parser: Parser): Expression =
     ##[
-        addition: mulDiv (("-" | "+") mulDiv)*
+        addition: mulDivMod (("-" | "+") mulDivMod)*
             ;
     ]##
-    result = parser.mulDiv
+    result = parser.mulDivMod
     while parser.match(TOK_MINUS, TOK_PLUS):
         result = Binary(
             left: result,
             operator: parser.previous,
-            right: parser.mulDiv
+            right: parser.mulDivMod
         )
 
 proc comparison(parser: Parser): Expression =
@@ -263,12 +263,11 @@ proc assignment(parser: Parser): Expression =
     if parser.match(TOK_EQUAL):
         if result of Variable:
             return Assign(
-                name: cast[Variable](result).name,
+                name: Variable(result).name,
                 value: parser.assignment
             )
         echo "Invalid assignment target"
         quit()
-
 
 proc expression(parser: Parser): Expression =
     ##[
@@ -348,7 +347,6 @@ proc statement(parser: Parser): Statement =
             |   printStatement
             |   returnStatement
             |   whileStatement
-            |   blockStatement
             |   expressionStatement
             ;
     ]##
@@ -360,8 +358,6 @@ proc statement(parser: Parser): Statement =
         return parser.returnStatement
     elif parser.match(TOK_WHILE):
         return parser.whileStatement
-    elif parser.match(TOK_LEFT_BRACE):
-        return parser.blockStatement
     return parser.expressionStatement
 
 
@@ -369,7 +365,8 @@ proc parse*(parser: Parser): seq[Statement] =
     result = @[]
     while not parser.isAtEnd:
         ##[
-            program: statements
+            program: statement
+                | program statement
                 ;
         ]##
         result.add(parser.statement)

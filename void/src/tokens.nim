@@ -1,6 +1,6 @@
 type
     Kinds* = enum
-        TOK_PLUS, TOK_MINUS, TOK_STAR, TOK_SLASH, # + - * /
+        TOK_PLUS, TOK_MINUS, TOK_STAR, TOK_SLASH, TOK_PERCENT, # + - * / %
         TOK_LEFT_PAREN, TOK_RIGHT_PAREN, # ( )
         TOK_LEFT_SPAREN, TOK_RIGHT_SPAREN, # [ ]
         TOK_LEFT_BRACE, TOK_RIGHT_BRACE, # { }

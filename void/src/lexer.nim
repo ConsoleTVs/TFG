@@ -97,6 +97,7 @@ proc scanToken(lexer: Lexer) =
                 lexer.addToken(TOK_MINUS)
         of '*': lexer.addToken(TOK_STAR)
         of '/': lexer.addToken(TOK_SLASH)
+        of '%': lexer.addToken(TOK_PERCENT)
         of '(': lexer.addToken(TOK_LEFT_PAREN)
         of ')': lexer.addToken(TOK_RIGHT_PAREN)
         of '[': lexer.addToken(TOK_LEFT_SPAREN)
