@@ -123,19 +123,21 @@ method codegen*(vm: VM, n: Function) =
     vm.add(VALUEINST, StringValue(value: startLabel))
     vm.add(PUSHINST)
     vm.add(VALUEINST, StringValue(value: endLabel))
-    vm.add(FUNINST) # This will pop last 3 values to know the startLabel, theEndLabel and the current scope.
+    vm.add(FUNINST) # This will pop last 2 values to know the startLabel and theEndLabel
     vm.add(LABELINST, StringValue(value: startLabel))
     # Function start
     # vm.add(POPARGUMENTSINST)
     vm.codegen(n.body)
+    vm.add(PUSHINST)
+    vm.add(VALUEINST, NoneValue())
     vm.add(RETURNINST)
     # Function end
     vm.add(LABELINST, StringValue(value: endLabel))
 
 method codegen*(vm: VM, n: Call) =
-    vm.add(PUSHPCOFFSETINST)
-    vm.add(VALUEINST, NumberValue(value: float(4 + n.arguments.len)))
-    vm.add(PUSHSCOPEINST)
+    # vm.add(PUSHPCOFFSETINST)
+    # vm.add(VALUEINST, NumberValue(value: float(4 + n.arguments.len)))
+    # vm.add(PUSHSCOPEINST)
     for i in n.arguments:
         vm.codegen(i)
     # vm.add(PUSHINST) # Push the number of arguments

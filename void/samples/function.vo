@@ -2,8 +2,16 @@ e = "a";
 add = () => {
     print e;
 };
-a = 0;
-while (a < 10000) => {
-    add();
-    a = a + 1;
-}
+#a = 0;
+#while (a < 10000) => {
+#    add();
+#    a = a + 1;
+#}
+
+test = () => {
+    b = 5;
+    print b;
+    print e;
+    print f;
+};
+test();

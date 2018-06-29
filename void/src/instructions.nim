@@ -1,4 +1,4 @@
-import values, strutils, math
+import values, strutils, math, frame
 
 ##[
     This module implements all the possible instructions and the
@@ -148,5 +148,5 @@ method branchfInst*(a: NumberValue): bool = not bool(a.value)
 method branchfInst*(a: BooleanValue): bool = not a.value
 method branchfInst*(a: StringValue): bool = not bool(a.value.len)
 
-method funInst*(startLabel: Value, scope: int): Value {.base.} = "Wrong function declaration".abort
-method funInst*(startLabel: StringValue, scope: int): Value = FunctionValue(label: startLabel.value, scope: scope)
+method funInst*(startLabel: Value, frame: Frame): Value {.base.} = "Wrong function declaration".abort
+method funInst*(startLabel: StringValue, frame: Frame): Value = FunctionValue(label: startLabel.value, frame: frame)

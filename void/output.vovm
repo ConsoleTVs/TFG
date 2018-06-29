@@ -7,24 +7,26 @@
 *_0:
 	LOAD "e"
 	PRINT
+	PUSH none
 	RETURN
 *_1:
 	STORE "add"
-	PUSH 0.0
-	STORE "a"
+	PUSH "*_2"
+	PUSH "*_3"
+	FUN
 *_2:
-	LOAD "a"
-	PUSH 10000.0
-	LT
-	BRANCHF "*_3"
-	PUSHPCOFFSET 4.0
-	PUSHSCOPE
-	LOAD "add"
-	CALL
-	LOAD "a"
-	PUSH 1.0
-	ADD
-	STORE "a"
-	JUMP "*_2"
+	PUSH 5.0
+	STORE "b"
+	LOAD "b"
+	PRINT
+	LOAD "e"
+	PRINT
+	LOAD "f"
+	PRINT
+	PUSH none
+	RETURN
 *_3:
+	STORE "test"
+	LOAD "test"
+	CALL
 	HALT

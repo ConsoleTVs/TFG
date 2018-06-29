@@ -1,7 +1,10 @@
 import rules
-type
-    Value* = ref object of RootObj ## Base value definition
 
+type Value* = ref object of RootObj ## Base value definition
+
+import frame
+
+type
     NumberValue* = ref object of Value ## Value to represent numbers
         value*: float
 
@@ -12,7 +15,8 @@ type
         value*: string
 
     FunctionValue* = ref object of Value ## Value to represent functions
-        arguments*, scope*: int # Number of arguments, Frame pointer
+        arguments*: int # Number of arguments
+        frame*: Frame
         label*: string # Label of the function
 
     NoneValue* = ref object of Value ## Value to represent no value.

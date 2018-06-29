@@ -1,4 +1,4 @@
-import tables, values, instructions
+import tables, values, instructions, frame
 
 const
     vm_label_prefix* = "*"
@@ -8,18 +8,21 @@ type
     VM* = ref tuple
         program: seq[Instruction] # Program instructions
         stack: seq[Value] # Program instructions
-        heap: seq[Table[string, Value]] # VM Heap
+        # heap: seq[Table[string, Value]] # VM Heap
+        frames: seq[Frame] # Current execution frame
         labels: Table[string, int] # Labels (label -> pc)
-        pc, currentScope, temp_label_num: int # Program Counter, Current heap scope, Helper to prefix temp labels and don't repeat any
+        # currentScope: int
+        pc, temp_label_num: int # Program Counter, Current heap scope, Helper to prefix temp labels and don't repeat any
 
 proc newVM*(program: seq[Instruction]): VM =
     new result
     result.program = program
     result.stack = @[]
     result.pc = -1 # It increments on the first run to 0
-    result.currentScope = 0
+    # result.currentScope = 0
     result.temp_label_num = 0
-    result.heap = @[initTable[string, Value]()]
+    # result.heap = @[initTable[string, Value]()]
+    result.frames = @[newFrame(0)]
     result.labels = initTable[string, int]()
 
 proc dumpStack*(vm: VM) =
@@ -39,8 +42,8 @@ proc jump(vm: VM, i: Instruction) = vm.pc = int(NumberValue(i.value).value)
 proc labelJump(vm: VM, i: Instruction) = vm.pc = vm.labels[StringValue(i.value).value]
 proc labelJump(vm: VM, i: StringValue) = vm.pc = vm.labels[i.value]
 
-proc scope(vm: VM): Table[string, Value] = vm.heap[vm.heap.len - 1]
-proc createScope(vm: VM) = vm.heap.add(vm.scope); vm.currentScope.inc
+# proc scope(vm: VM): Table[string, Value] = vm.heap[vm.heap.len - 1]
+# proc createScope(vm: VM) = vm.heap.add(vm.scope); vm.currentScope.inc
 
 proc push(vm: VM, value: Value) = vm.stack.add(value)
 
@@ -91,18 +94,16 @@ proc run*(vm: VM) =
                     # Do not re-order theese!
                     endLabel = vm.pop
                     startLabel = vm.pop
-                    fun = funInst(startLabel, vm.currentScope)
-                var s = vm.scope # Get the current scope
-                s["f"] = fun # Save a self-reference to that scope
-                vm.heap[vm.currentScope] = s
+                    fun = funInst(startLabel, vm.frames[vm.frames.len - 1])
+                vm.frames[vm.frames.len - 1].heap["f"] = fun # Self reference to function
+                vm.frames.add(newFrame(vm.frames[vm.frames.len - 1].return_address, vm.frames[vm.frames.len - 1].heap))
                 vm.push(fun) # Push the function value to the stack
-                vm.createScope # Create a new scope, (a copy of the current without the self-reference)
                 vm.labelJump(StringValue(endLabel))
                 # vm.dumpStack
             of CALLINST:
-                let fun = vm.pop
-                vm.currentScope = FunctionValue(fun).scope
-                vm.pc = vm.labels[FunctionValue(fun).label]
+                let fun = FunctionValue(vm.pop)
+                vm.frames.add(newFrame(vm.pc, fun.frame.heap))
+                vm.pc = vm.labels[fun.label]
             of BRANCHTINST:
                 let inst = vm.advance # Always consume the next instruction
                 if vm.pop.branchtInst:
@@ -111,16 +112,18 @@ proc run*(vm: VM) =
                 let inst = vm.advance # Always consume the next instruction
                 if vm.pop.branchfInst:
                     vm.labelJump(inst)
-            of STOREINST: vm.heap[vm.currentScope][StringValue(vm.advance.value).value] = vm.pop
+            of STOREINST: vm.frames[vm.frames.len - 1].heap[StringValue(vm.advance.value).value] = vm.pop
             of LOADINST:
-                let key = StringValue(vm.advance.value).value
-                if vm.heap[vm.currentScope].hasKey(key):
-                    vm.push(vm.heap[vm.currentScope][key])
+                let
+                    key = StringValue(vm.advance.value).value
+                    frame = vm.frames[vm.frames.len - 1]
+                if frame.heap.hasKey(key):
+                    vm.push(frame.heap[key])
                 else:
                     echo "Undefined variable " & key
                     quit()
-            of PUSHPCOFFSETINST: vm.push(NumberValue(value: float(vm.pc) + NumberValue(vm.advance.value).value))
-            of PUSHSCOPEINST: vm.push(NumberValue(value: float(vm.currentScope)))
+            # of PUSHPCOFFSETINST: vm.push(NumberValue(value: float(vm.pc) + NumberValue(vm.advance.value).value))
+            # of PUSHSCOPEINST: vm.push(NumberValue(value: float(vm.currentScope)))
             of POPARGUMENTSINST:
                 discard
                 # FUNCTION ??
@@ -128,9 +131,10 @@ proc run*(vm: VM) =
                 # while numArgs > 0:
                 #    vm.heap[vm.currentScope][] = v
             of RETURNINST:
-                #vm.dumpStack
-                vm.currentScope = int(NumberValue(vm.pop).value)
-                vm.pc = int(NumberValue(vm.pop).value)
+                let pc = vm.frames[vm.frames.len - 1].return_address
+                vm.frames.delete(vm.frames.len - 1) # Delete the current frame, so we get back to the original
+                vm.pc = pc
+                vm.push(vm.pop) # Put the return value back up
             else:
                 echo "Unknown operation " & $vm.program[vm.pc].kind
                 quit()
