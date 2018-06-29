@@ -40,8 +40,14 @@ type
         RJUMPINST = "RJUMP" # Relative Jump
         BRANCHTINST = "BRANCHT" # Branch if true
         BRANCHFINST = "BRANCHF" # Branch if false
-        STOREINST = "STORE" # Store
-        LOADINST = "LOAD" # Load
+        STOREINST = "STORE" # Store variable
+        LOADINST = "LOAD" # Load variable
+        FUNINST = "FUN" # Function definition
+        CALLINST = "CALL" # Call instruction
+        RETURNINST = "RETURN" # Return instruction
+        PUSHPCOFFSETINST = "PUSHPCOFFSET" # Push the current program counter + offset
+        PUSHSCOPEINST = "PUSHSCOPE" # Push the current scope
+        POPARGUMENTSINST = "POPARGUMENTS" # Instruction to pop function arguments
 
     Instruction* = ref tuple
         ##[
@@ -141,3 +147,6 @@ method branchfInst*(a: Value): bool {.base.} = "Wrong branch not instruction".ab
 method branchfInst*(a: NumberValue): bool = not bool(a.value)
 method branchfInst*(a: BooleanValue): bool = not a.value
 method branchfInst*(a: StringValue): bool = not bool(a.value.len)
+
+method funInst*(startLabel: Value, scope: int): Value {.base.} = "Wrong function declaration".abort
+method funInst*(startLabel: StringValue, scope: int): Value = FunctionValue(label: startLabel.value, scope: scope)

@@ -7,15 +7,15 @@ method codegen*(vm: VM, n: Statement) {.base.} = discard
 
 method codegen*(vm: VM, n: Number) =
     vm.add(PUSHINST)
-    vm.add(VALUEINST, n.value)
+    vm.add(VALUEINST, NumberValue(value: n.value))
 
 method codegen*(vm: VM, n: String) =
     vm.add(PUSHINST)
-    vm.add(VALUEINST, n.value)
+    vm.add(VALUEINST, StringValue(value: n.value))
 
 method codegen*(vm: VM, n: Boolean) =
     vm.add(PUSHINST)
-    vm.add(VALUEINST, n.value)
+    vm.add(VALUEINST, BooleanValue(value: n.value))
 
 method codegen*(vm: VM, n: None) =
     vm.add(PUSHINST)
@@ -116,3 +116,29 @@ method codegen*(vm: VM, n: While) =
     vm.add(JUMPINST)
     vm.add(VALUEINST, StringValue(value: startLabel))
     vm.add(LABELINST, StringValue(value: endLabel))
+
+method codegen*(vm: VM, n: Function) =
+    let startLabel, endLabel = vm.tempLabel
+    vm.add(PUSHINST)
+    vm.add(VALUEINST, StringValue(value: startLabel))
+    vm.add(PUSHINST)
+    vm.add(VALUEINST, StringValue(value: endLabel))
+    vm.add(FUNINST) # This will pop last 3 values to know the startLabel, theEndLabel and the current scope.
+    vm.add(LABELINST, StringValue(value: startLabel))
+    # Function start
+    # vm.add(POPARGUMENTSINST)
+    vm.codegen(n.body)
+    vm.add(RETURNINST)
+    # Function end
+    vm.add(LABELINST, StringValue(value: endLabel))
+
+method codegen*(vm: VM, n: Call) =
+    vm.add(PUSHPCOFFSETINST)
+    vm.add(VALUEINST, NumberValue(value: float(4 + n.arguments.len)))
+    vm.add(PUSHSCOPEINST)
+    for i in n.arguments:
+        vm.codegen(i)
+    # vm.add(PUSHINST) # Push the number of arguments
+    # vm.add(VALUEINST, NumberValue(value: float(n.arguments.len)))
+    vm.codegen(n.callee) # The caller function
+    vm.add(CALLINST) # Call instruction

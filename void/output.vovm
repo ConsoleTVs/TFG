@@ -1,25 +1,30 @@
 *main:
+	PUSH "a"
+	STORE "e"
+	PUSH "*_0"
+	PUSH "*_1"
+	FUN
+*_0:
+	LOAD "e"
+	PRINT
+	RETURN
+*_1:
+	STORE "add"
 	PUSH 0.0
 	STORE "a"
-	PUSH 0.0
-	STORE "b"
-*_0:
+*_2:
 	LOAD "a"
-	PUSH 3000000.0
+	PUSH 10000.0
 	LT
-	BRANCHF "*_1"
-	LOAD "a"
-	LOAD "b"
-	PUSH 2.0
-	DIV
-	SUB
-	STORE "b"
+	BRANCHF "*_3"
+	PUSHPCOFFSET 4.0
+	PUSHSCOPE
+	LOAD "add"
+	CALL
 	LOAD "a"
 	PUSH 1.0
 	ADD
 	STORE "a"
-	JUMP "*_0"
-*_1:
-	LOAD "b"
-	PRINT
+	JUMP "*_2"
+*_3:
 	HALT

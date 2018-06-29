@@ -1,4 +1,4 @@
-import tokens, values
+import tokens
 
 #[
     Base declaraions
@@ -13,13 +13,13 @@ type
 
 type
     Number* = ref object of Expression
-        value*: NumberValue
+        value*: float
 
     String* = ref object of Expression
-        value*: StringValue
+        value*: string
 
     Boolean* = ref object of Expression
-        value*: BooleanValue
+        value*: bool
 
     None* = ref object of Expression
 
@@ -73,10 +73,10 @@ method `$`*(t: Assign): string = "Assign(" & $t.name.lexeme & ", " & $t.value & 
 method `$`*(t: Logical): string = "Logical(" & $t.left & ", " & $t.operator.lexeme & ", " & $t.right & ")"
 
 method `$`*(t: Call): string =
-    result = "Call(" & $t.callee
+    result = "Call(" & $t.callee & ", ["
     for i in t.arguments:
-        result &= $i
-    result &= ")"
+        result &= $i & ", "
+    result &= "])"
 
 #[
     Statemets

@@ -12,8 +12,8 @@ proc run(input: string) =
         parser = tokens.newParser
         ast = parser.parse
 
-    #for statement in ast:
-    #    echo $statement
+    for statement in ast:
+        echo $statement
 
     #[
         var instructions: seq[Instruction] = @[]
