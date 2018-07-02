@@ -118,6 +118,18 @@ proc primary(parser: Parser): Expression =
         return String(value: parser.previous.value)
     if parser.match(TOK_IDENTIFIER):
         return Variable(name: parser.previous)
+    if parser.match(TOK_LEFT_SPAREN):
+        # It's a list, we need to get all of it's values
+        var values: seq[Expression] = @[]
+        while true:
+            if parser.check(TOK_EOF):
+                echo "Unfinished list. Expecting ']' at the end of the list"
+                quit()
+            values.add(parser.expression)
+            if parser.match(TOK_RIGHT_SPAREN):
+                break
+            discard parser.consume(TOK_COMMA, "Expected ',' after list element on line " & $parser.peek.line)
+        return List(values: values)
     if parser.match(TOK_NONE):
         return None()
     if parser.match(TOK_LEFT_PAREN):
@@ -151,7 +163,6 @@ proc finishCall(parser: Parser, callee: Expression): Expression =
 proc call(parser: Parser): Expression =
     ##[
         call: primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
-            | call
             ;
     ]##
     result = parser.primary

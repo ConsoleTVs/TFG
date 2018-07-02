@@ -1,0 +1,9 @@
+test = (a, b) -> a + b;
+a = 0;
+b = 0;
+while (test(a, b) != 120) => {
+    a = a + 2;
+    b = b + 4;
+}
+print a;
+print b;

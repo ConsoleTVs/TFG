@@ -21,6 +21,9 @@ type
     Boolean* = ref object of Expression
         value*: bool
 
+    List* = ref object of Expression
+        values*: seq[Expression]
+
     None* = ref object of Expression
 
     Group* = ref object of Expression
@@ -57,6 +60,12 @@ method `$`*(t: Number): string = "Number(" & $t.value & ")"
 method `$`*(t: String): string = "String(" & $t.value & ")"
 
 method `$`*(t: Boolean): string = "Boolean(" & $t.value & ")"
+
+method `$`*(t: List): string =
+    result = "List("
+    for i in t.values:
+        result &= $i & ", "
+    result &= ")"
 
 method `$`*(t: None): string = "None()"
 

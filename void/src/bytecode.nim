@@ -12,7 +12,8 @@ proc format(b: Bytecode, n: Instruction): string =
                 return "\"" & $n.value & "\"\n"
             else:
                 return $n.value & "\n"
-        of BRANCHTINST, BRANCHFINST, PUSHINST, JUMPINST, STOREINST, LOADINST, PUSHPCOFFSETINST: return "\t" & $n.kind & " "
+        of BRANCHTINST, BRANCHFINST, PUSHINST, JUMPINST, STOREINST, LOADINST, PUSHPCOFFSETINST, LISTINST:
+            return "\t" & $n.kind & " "
         else: return "\t" & $n.kind & "\n"
 
 proc save*(b: Bytecode, file = "output.vovm") =

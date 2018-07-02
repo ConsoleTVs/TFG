@@ -17,6 +17,14 @@ method codegen*(vm: VM, n: Boolean) =
     vm.add(PUSHINST)
     vm.add(VALUEINST, BooleanValue(value: n.value))
 
+method codegen*(vm: VM, n: List) =
+    var i = n.values.len - 1
+    while i >= 0:
+        vm.codegen(n.values[i])
+        i.dec
+    vm.add(LISTINST)
+    vm.add(VALUEINST, NumberValue(value: float(n.values.len)))
+
 method codegen*(vm: VM, n: None) =
     vm.add(PUSHINST)
     vm.add(VALUEINST, NoneValue())
@@ -126,7 +134,10 @@ method codegen*(vm: VM, n: Function) =
     vm.add(FUNINST) # This will pop last 2 values to know the startLabel and theEndLabel
     vm.add(LABELINST, StringValue(value: startLabel))
     # Function start
-    # vm.add(POPARGUMENTSINST)
+    # We first get the arguments and we assign them to the variables
+    for i in n.arguments:
+        vm.add(STOREINST)
+        vm.add(VALUEINST, StringValue(value: i.lexeme))
     vm.codegen(n.body)
     vm.add(PUSHINST)
     vm.add(VALUEINST, NoneValue())
@@ -134,13 +145,37 @@ method codegen*(vm: VM, n: Function) =
     # Function end
     vm.add(LABELINST, StringValue(value: endLabel))
 
+method codegen*(vm: VM, n: Return) =
+    vm.codegen(n.value)
+    vm.add(RETURNINST)
+
 method codegen*(vm: VM, n: Call) =
     # vm.add(PUSHPCOFFSETINST)
     # vm.add(VALUEINST, NumberValue(value: float(4 + n.arguments.len)))
     # vm.add(PUSHSCOPEINST)
-    for i in n.arguments:
-        vm.codegen(i)
+    var max = n.arguments.len
+    while max > 0:
+        vm.codegen(n.arguments[max - 1]) # This pushes every argument into the stack
+        max.dec
     # vm.add(PUSHINST) # Push the number of arguments
     # vm.add(VALUEINST, NumberValue(value: float(n.arguments.len)))
     vm.codegen(n.callee) # The caller function
     vm.add(CALLINST) # Call instruction
+
+method codegen*(vm: VM, n: SimpleFunction) =
+    let startLabel, endLabel = vm.tempLabel
+    vm.add(PUSHINST)
+    vm.add(VALUEINST, StringValue(value: startLabel))
+    vm.add(PUSHINST)
+    vm.add(VALUEINST, StringValue(value: endLabel))
+    vm.add(FUNINST) # This will pop last 2 values to know the startLabel and theEndLabel
+    vm.add(LABELINST, StringValue(value: startLabel))
+    # Function start
+    # We first get the arguments and we assign them to the variables
+    for i in n.arguments:
+        vm.add(STOREINST)
+        vm.add(VALUEINST, StringValue(value: i.lexeme))
+    vm.codegen(n.expression)
+    vm.add(RETURNINST)
+    # Function end
+    vm.add(LABELINST, StringValue(value: endLabel))

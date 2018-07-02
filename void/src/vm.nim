@@ -135,6 +135,15 @@ proc run*(vm: VM) =
                 vm.frames.delete(vm.frames.len - 1) # Delete the current frame, so we get back to the original
                 vm.pc = pc
                 vm.push(vm.pop) # Put the return value back up
+            of LISTINST:
+                # We create a list value with N elements
+                var
+                    values: seq[Value] = @[]
+                    num = NumberValue(vm.advance.value).value
+                while num > 0:
+                    values.add(vm.pop)
+                    num -= 1
+                vm.push(ListValue(values: values))
             else:
                 echo "Unknown operation " & $vm.program[vm.pc].kind
                 quit()

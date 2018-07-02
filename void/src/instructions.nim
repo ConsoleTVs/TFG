@@ -48,6 +48,7 @@ type
         PUSHPCOFFSETINST = "PUSHPCOFFSET" # Push the current program counter + offset
         PUSHSCOPEINST = "PUSHSCOPE" # Push the current scope
         POPARGUMENTSINST = "POPARGUMENTS" # Instruction to pop function arguments
+        LISTINST = "LIST"
 
     Instruction* = ref tuple
         ##[

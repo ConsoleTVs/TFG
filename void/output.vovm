@@ -1,32 +1,14 @@
 *main:
-	PUSH "a"
-	STORE "e"
-	PUSH "*_0"
-	PUSH "*_1"
-	FUN
-*_0:
-	LOAD "e"
+	PUSH true
+	PUSH "HELLO"
+	PUSH 1.0
+	NEG
+	PUSH 0.0
+	PUSH 1.0
+	PUSH 2.0
+	PUSH 3.0
+	PUSH 2.0
+	PUSH 1.0
+	LIST 9.0
 	PRINT
-	PUSH none
-	RETURN
-*_1:
-	STORE "add"
-	PUSH "*_2"
-	PUSH "*_3"
-	FUN
-*_2:
-	PUSH 5.0
-	STORE "b"
-	LOAD "b"
-	PRINT
-	LOAD "e"
-	PRINT
-	LOAD "f"
-	PRINT
-	PUSH none
-	RETURN
-*_3:
-	STORE "test"
-	LOAD "test"
-	CALL
 	HALT
