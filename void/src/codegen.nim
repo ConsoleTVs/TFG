@@ -1,6 +1,6 @@
 import vm, instructions, values, rules, tokens
 
-proc add(vm: VM, kind: InstructionKind, value: Value = nil) = vm.program.add(newInstruction(kind, value))
+proc add*(vm: VM, kind: InstructionKind, value: Value = nil) = vm.program.add(newInstruction(kind, value))
 
 method codegen*(vm: VM, n: Expression) {.base.} = discard
 method codegen*(vm: VM, n: Statement) {.base.} = discard
@@ -80,7 +80,7 @@ method codegen*(vm: VM, n: Logical) =
 
 method codegen*(vm: VM, n: Print) =
     vm.codegen(n.expression)
-    vm.add(PRINTINT)
+    vm.add(PRINTINST)
 
 method codegen*(vm: VM, n: Block) =
     for i in n.body:
@@ -131,7 +131,9 @@ method codegen*(vm: VM, n: Function) =
     vm.add(VALUEINST, StringValue(value: startLabel))
     vm.add(PUSHINST)
     vm.add(VALUEINST, StringValue(value: endLabel))
-    vm.add(FUNINST) # This will pop last 2 values to know the startLabel and theEndLabel
+    vm.add(PUSHINST)
+    vm.add(VALUEINST, NumberValue(value: float(n.arguments.len))) # The number of arguments
+    vm.add(FUNINST) # This will pop last 3 values to know the startLabel and theEndLabel and the number of arguments
     vm.add(LABELINST, StringValue(value: startLabel))
     # Function start
     # We first get the arguments and we assign them to the variables
@@ -160,6 +162,8 @@ method codegen*(vm: VM, n: Call) =
     # vm.add(PUSHINST) # Push the number of arguments
     # vm.add(VALUEINST, NumberValue(value: float(n.arguments.len)))
     vm.codegen(n.callee) # The caller function
+    vm.add(PUSHINST)
+    vm.add(VALUEINST, NumberValue(value: float(n.arguments.len)))
     vm.add(CALLINST) # Call instruction
 
 method codegen*(vm: VM, n: SimpleFunction) =
@@ -168,6 +172,8 @@ method codegen*(vm: VM, n: SimpleFunction) =
     vm.add(VALUEINST, StringValue(value: startLabel))
     vm.add(PUSHINST)
     vm.add(VALUEINST, StringValue(value: endLabel))
+    vm.add(PUSHINST)
+    vm.add(VALUEINST, NumberValue(value: float(n.arguments.len))) # The number of arguments
     vm.add(FUNINST) # This will pop last 2 values to know the startLabel and theEndLabel
     vm.add(LABELINST, StringValue(value: startLabel))
     # Function start

@@ -1,17 +1,54 @@
 *main:
+	PUSH "*_0"
+	PUSH "*_1"
+	PUSH 1.0
+	FUN
+*_0:
+	STORE "e"
+	LOAD "e"
+	LEN
+	RETURN
+	PUSH none
+	RETURN
+*_1:
+	PUSH "hehe"
+	PUSH 2.0
+	MUL
+	PUSH false
+	PUSH true
+	ADD
+	PUSH true
+	PUSH true
+	ADD
+	PUSH 2.0
+	MUL
 	PUSH 1.0
 	NEG
-	PUSH 0.0
-	PUSH 1.0
-	PUSH 2.0
+	PUSH 5.0
+	PUSH 4.0
 	PUSH 3.0
 	PUSH 2.0
 	PUSH 1.0
-	LIST 7.0
+	LIST 9.0
+	STORE "list"
+	PUSH 0.0
 	STORE "a"
-	PUSH 1.0
-	NEG
+*_2:
 	LOAD "a"
+	LOAD "list"
+	LOAD "len"
+	PUSH 1.0
+	CALL
+	LT
+	BRANCHF "*_3"
+	LOAD "a"
+	LOAD "list"
 	ACCESS
 	PRINT
+	LOAD "a"
+	PUSH 1.0
+	ADD
+	STORE "a"
+	JUMP "*_2"
+*_3:
 	HALT

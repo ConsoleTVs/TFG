@@ -67,7 +67,7 @@ proc run*(vm: VM) =
         case vm.program[vm.pc].kind:
             of HALTINST: return
             of NOPINST, LABELINST: discard # No Operation Instruction
-            of PRINTINT: echo vm.pop
+            of PRINTINST: echo vm.pop
             of PUSHINST: vm.push(vm.advance.value)
             of VALUEINST: discard # Values are used with the advance() proc and not as an instruction.
             of POPINST: discard vm.pop # Kinda useless to pop without a reason tho...
@@ -92,16 +92,22 @@ proc run*(vm: VM) =
                 # vm.dumpStack
                 let
                     # Do not re-order theese!
+                    arguments = vm.pop
                     endLabel = vm.pop
                     startLabel = vm.pop
-                    fun = funInst(startLabel, vm.frames[vm.frames.len - 1])
+                    fun = funInst(startLabel, vm.frames[vm.frames.len - 1], int(NumberValue(arguments).value))
                 vm.frames[vm.frames.len - 1].heap["f"] = fun # Self reference to function
                 vm.frames.add(newFrame(vm.frames[vm.frames.len - 1].return_address, vm.frames[vm.frames.len - 1].heap))
                 vm.push(fun) # Push the function value to the stack
                 vm.labelJump(StringValue(endLabel))
                 # vm.dumpStack
             of CALLINST:
-                let fun = FunctionValue(vm.pop)
+                let
+                    arguments = int(NumberValue(vm.pop).value)
+                    fun = FunctionValue(vm.pop)
+                if arguments != fun.arguments:
+                    echo "The function requires " & $fun.arguments & " arguments. You provided " & $arguments & "."
+                    quit()
                 vm.frames.add(newFrame(vm.pc, fun.frame.heap))
                 vm.pc = vm.labels[fun.label]
             of BRANCHTINST:
@@ -145,6 +151,7 @@ proc run*(vm: VM) =
                     num -= 1
                 vm.push(ListValue(values: values))
             of ACCESSINST: vm.push(accessInst(vm.pop, vm.pop))
+            of LENINST: vm.push(lenInst(vm.pop))
             else:
                 echo "Unknown operation " & $vm.program[vm.pc].kind
                 quit()

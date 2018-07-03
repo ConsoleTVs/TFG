@@ -1,4 +1,4 @@
-import parseopt, lexer, rules, parser, vm, instructions, values, codegen, bytecode
+import parseopt, lexer, rules, parser, vm, instructions, values, codegen, bytecode, stdlib, tables
 #[
     Void Programming Language
     Copyright 2018 Erik Campobadal Forés <soc@erik.cat>
@@ -30,8 +30,14 @@ proc run(input: string) =
     var
         vm: VM = newVM(@[])
         bytecode: Bytecode = (vm: vm)
+
+    # Add the void standard library
+    vm.addStdLib
+
+    # Add the program instructions
     for i in ast:
         vm.codegen(i)
+
     vm.program.add(newInstruction(HALTINST))
     bytecode.save
     vm.run
