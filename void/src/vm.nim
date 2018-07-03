@@ -64,6 +64,7 @@ proc run*(vm: VM) =
     vm.findLabels
     while vm.pc < vm.program.len - 1:
         vm.pc.inc
+        #echo vm.program[vm.pc].kind
         case vm.program[vm.pc].kind:
             of HALTINST: return
             of NOPINST, LABELINST: discard # No Operation Instruction
@@ -73,19 +74,45 @@ proc run*(vm: VM) =
             of POPINST: discard vm.pop # Kinda useless to pop without a reason tho...
             of NEGINST: vm.push(negInst(vm.pop))
             of NOTINST: vm.push(notInst(vm.pop))
-            of ORINST: vm.push(orInst(vm.pop, vm.pop))
-            of ANDINST: vm.push(andInst(vm.pop, vm.pop))
-            of ADDINST: vm.push(addInst(vm.pop, vm.pop))
-            of SUBINST: vm.push(subInst(vm.pop, vm.pop))
-            of MULINST: vm.push(mulInst(vm.pop, vm.pop))
-            of DIVINST: vm.push(divInst(vm.pop, vm.pop))
-            of MODINST: vm.push(modInst(vm.pop, vm.pop))
-            of EQINST: vm.push(eqInst(vm.pop, vm.pop))
-            of NEQINST: vm.push(neqInst(vm.pop, vm.pop))
-            of GTINST: vm.push(gtInst(vm.pop, vm.pop))
-            of GTEINST: vm.push(gteInst(vm.pop, vm.pop))
-            of LTINST: vm.push(ltInst(vm.pop, vm.pop))
-            of LTEINST: vm.push(lteInst(vm.pop, vm.pop))
+            of ORINST:
+                let a, b = vm.pop
+                vm.push(orInst(a, b))
+            of ANDINST:
+                let a, b = vm.pop
+                vm.push(andInst(a, b))
+            of ADDINST:
+                let a, b = vm.pop
+                vm.push(addInst(a, b))
+            of SUBINST:
+                let a, b = vm.pop
+                vm.push(subInst(a, b))
+            of MULINST:
+                let a, b = vm.pop
+                vm.push(mulInst(a, b))
+            of DIVINST:
+                let a, b = vm.pop
+                vm.push(divInst(a, b))
+            of MODINST:
+                let a, b = vm.pop
+                vm.push(modInst(a, b))
+            of EQINST:
+                let a, b = vm.pop
+                vm.push(eqInst(a, b))
+            of NEQINST:
+                let a, b = vm.pop
+                vm.push(neqInst(a, b))
+            of GTINST:
+                let a, b = vm.pop
+                vm.push(gtInst(a, b))
+            of GTEINST:
+                let a, b = vm.pop
+                vm.push(gteInst(a, b))
+            of LTINST:
+                let a, b = vm.pop
+                vm.push(ltInst(a, b))
+            of LTEINST:
+                let a, b = vm.pop
+                vm.push(lteInst(a, b))
             of JUMPINST: vm.labelJump(vm.advance)
             of RJUMPINST: vm.jump(vm.advance)
             of FUNINST:
