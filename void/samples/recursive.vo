@@ -1,0 +1,8 @@
+rec = (n) => {
+    if (n == 0) => {
+        return "Finished";
+    }
+    print "Recursive...";
+    return f(n - 1);
+};
+print rec(5);
