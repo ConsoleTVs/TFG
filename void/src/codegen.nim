@@ -179,3 +179,8 @@ method codegen*(vm: VM, n: SimpleFunction) =
     vm.add(RETURNINST)
     # Function end
     vm.add(LABELINST, StringValue(value: endLabel))
+
+method codegen*(vm: VM, n: Access) =
+    vm.codegen(n.index)
+    vm.codegen(n.item)
+    vm.add(ACCESSINST)

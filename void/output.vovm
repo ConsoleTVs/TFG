@@ -1,6 +1,4 @@
 *main:
-	PUSH true
-	PUSH "HELLO"
 	PUSH 1.0
 	NEG
 	PUSH 0.0
@@ -9,6 +7,11 @@
 	PUSH 3.0
 	PUSH 2.0
 	PUSH 1.0
-	LIST 9.0
+	LIST 7.0
+	STORE "a"
+	PUSH 1.0
+	NEG
+	LOAD "a"
+	ACCESS
 	PRINT
 	HALT

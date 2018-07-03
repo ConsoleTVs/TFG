@@ -53,6 +53,10 @@ type
         paren*: Token
         arguments*: seq[Expression]
 
+    Access* = ref object of Expression
+        item*: Expression
+        index*: Expression
+
 method `$`*(t: Expression): string {.base.} = "Expression()"
 
 method `$`*(t: Number): string = "Number(" & $t.value & ")"
@@ -86,6 +90,8 @@ method `$`*(t: Call): string =
     for i in t.arguments:
         result &= $i & ", "
     result &= "])"
+
+method `$`*(t: Access): string = "Access(" & $t.item & ", " & $t.index & ")"
 
 #[
     Statemets

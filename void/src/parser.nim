@@ -160,15 +160,25 @@ proc finishCall(parser: Parser, callee: Expression): Expression =
         arguments: arguments
     );
 
+proc finishAccess(parser: Parser, item: Expression): Expression =
+    let index = parser.expression
+    discard parser.consume(TOK_RIGHT_SPAREN, "Expect ']' after index access.")
+    return Access(
+        item: item,
+        index: index
+    );
+
 proc call(parser: Parser): Expression =
     ##[
-        call: primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
+        call: primary ( "(" arguments? ")" | "[" expression "]" | "." IDENTIFIER )* ;
             ;
     ]##
     result = parser.primary
     while true:
         if parser.match(TOK_LEFT_PAREN):
             result = parser.finishCall(result)
+        if parser.match(TOK_LEFT_SPAREN):
+            result = parser.finishAccess(result)
         else:
             break
 

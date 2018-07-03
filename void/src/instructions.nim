@@ -49,6 +49,7 @@ type
         PUSHSCOPEINST = "PUSHSCOPE" # Push the current scope
         POPARGUMENTSINST = "POPARGUMENTS" # Instruction to pop function arguments
         LISTINST = "LIST"
+        ACCESSINST = "ACCESS"
 
     Instruction* = ref tuple
         ##[
@@ -151,3 +152,9 @@ method branchfInst*(a: StringValue): bool = not bool(a.value.len)
 
 method funInst*(startLabel: Value, frame: Frame): Value {.base.} = "Wrong function declaration".abort
 method funInst*(startLabel: StringValue, frame: Frame): Value = FunctionValue(label: startLabel.value, frame: frame)
+
+method accessInst*(a: Value, i: Value): Value {.base.} = "Wrong access instruction".abort
+method accessInst*(a: ListValue, i: NumberValue): Value =
+    if int(i.value) > a.values.len - 1 or int(i.value) < 0:
+        abort($int(i.value) & " is out of index")
+    a.values[int(i.value)]

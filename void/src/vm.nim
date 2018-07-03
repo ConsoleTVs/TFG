@@ -144,6 +144,7 @@ proc run*(vm: VM) =
                     values.add(vm.pop)
                     num -= 1
                 vm.push(ListValue(values: values))
+            of ACCESSINST: vm.push(accessInst(vm.pop, vm.pop))
             else:
                 echo "Unknown operation " & $vm.program[vm.pc].kind
                 quit()
