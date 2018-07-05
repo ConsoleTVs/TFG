@@ -32,7 +32,7 @@ proc addStdLib*(vm: VM) =
         vm.add(VALUEINST, StringValue(value: endLabel))
         vm.add(PUSHINST)
         vm.add(VALUEINST, NumberValue(value: float(lib[k].arguments.len))) # The number of arguments
-        vm.add(FUNINST) # This will pop last 3 values to know the startLabel and theEndLabel and the number of arguments
+        vm.add(STDFUNINST) # This will pop last 3 values to know the startLabel and theEndLabel and the number of arguments
         vm.add(LABELINST, StringValue(value: startLabel))
         # Function start
         # We first get the arguments and we assign them to the variables

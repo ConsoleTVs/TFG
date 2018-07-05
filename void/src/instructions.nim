@@ -43,6 +43,7 @@ type
         STOREINST = "STORE" # Store variable
         LOADINST = "LOAD" # Load variable
         FUNINST = "FUN" # Function definition
+        STDFUNINST = "STDFUN" # STD Function definition (no need to push the value)
         CALLINST = "CALL" # Call instruction
         RETURNINST = "RETURN" # Return instruction
         PUSHPCOFFSETINST = "PUSHPCOFFSET" # Push the current program counter + offset

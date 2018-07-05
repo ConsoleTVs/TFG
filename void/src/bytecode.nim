@@ -4,6 +4,8 @@ type
     Bytecode* = tuple
         vm: VM
 
+proc newBytecode*(vm: VM): Bytecode = (vm: vm)
+
 proc format(b: Bytecode, n: Instruction): string =
     case n.kind:
         of LABELINST: return $n.value & ":\n"

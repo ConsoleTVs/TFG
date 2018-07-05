@@ -1,4 +1,14 @@
 import vm, instructions, values, rules, tokens
+##[
+
+    This module implements the code generation that takes place during AST to Bytecode
+    transformation. This proces have some optimizations applied to it as such, called
+    AST optimizations because they are done just before creating the bytecode.
+
+    Current Optimizations:
+        -   Dead code elimination
+
+]##
 
 proc add*(vm: VM, kind: InstructionKind, value: Value = nil) = vm.program.add(newInstruction(kind, value))
 
@@ -29,7 +39,22 @@ method codegen*(vm: VM, n: None) =
     vm.add(PUSHINST)
     vm.add(VALUEINST, NoneValue())
 
-method codegen*(vm: VM, n: ExpressionStatement) = vm.codegen(n.expression)
+method codegen*(vm: VM, n: ExpressionStatement) =
+    # Eliminate redundant code (expressions that have no effect in the code)
+
+    let ex = n.expression
+    if ex of Number: return
+    elif ex of String: return
+    elif ex of Boolean: return
+    elif ex of List: return
+    elif ex of None: return
+    elif ex of Group: return
+    elif ex of Unary: return
+    elif ex of Binary: return
+    elif ex of Variable: return
+    elif ex of Logical: return
+
+    vm.codegen(n.expression)
 
 method codegen*(vm: VM, n: Group) = vm.codegen(n.expression)
 
@@ -85,6 +110,8 @@ method codegen*(vm: VM, n: Print) =
 method codegen*(vm: VM, n: Block) =
     for i in n.body:
         vm.codegen(i)
+        if i of Return:
+            break
 
 method codegen*(vm: VM, n: SimpleIf) =
     vm.codegen(n.condition)

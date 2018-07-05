@@ -1,5 +1,3 @@
-import rules
-
 type Value* = ref object of RootObj ## Base value definition
 
 import frame

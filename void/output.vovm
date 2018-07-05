@@ -2,7 +2,7 @@
 	PUSH "*_0"
 	PUSH "*_1"
 	PUSH 1.0
-	FUN
+	STDFUN
 *_0:
 	STORE "e"
 	LOAD "e"
@@ -16,35 +16,28 @@
 	PUSH 1.0
 	FUN
 *_2:
-	STORE "n"
-	LOAD "n"
-	PUSH 2.0
-	LT
-	BRANCHF "*_4"
-	LOAD "n"
-	RETURN
-*_4:
-	LOAD "n"
+	STORE "a"
 	PUSH 1.0
-	SUB
-	LOAD "f"
-	PUSH 1.0
-	CALL
-	LOAD "n"
-	PUSH 2.0
-	SUB
-	LOAD "f"
-	PUSH 1.0
-	CALL
-	ADD
 	RETURN
 	PUSH none
 	RETURN
 *_3:
-	STORE "fib"
-	PUSH 28.0
-	LOAD "fib"
+	STORE "test"
+	PUSH 500000.0
+	STORE "a"
+*_4:
+	LOAD "a"
+	PUSH 0.0
+	GT
+	BRANCHF "*_5"
+	LOAD "a"
+	LOAD "test"
 	PUSH 1.0
 	CALL
-	PRINT
+	LOAD "a"
+	PUSH 1.0
+	SUB
+	STORE "a"
+	JUMP "*_4"
+*_5:
 	HALT

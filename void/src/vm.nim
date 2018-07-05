@@ -35,8 +35,8 @@ proc dumpStack*(vm: VM) =
 
 proc tempLabel*(vm: VM): string = vm.temp_label_num.inc; vm_temp_label_prefix & $(vm.temp_label_num - 1)
 
-# proc peek(vm: VM): Instruction = vm.program[vm.pc]
-proc advance(vm: VM): Instruction =  vm.pc.inc; return vm.program[vm.pc]
+proc peek(vm: VM): Instruction = vm.program[vm.pc]
+proc advance(vm: VM): Instruction =  vm.pc.inc; return vm.peek
 
 proc jump(vm: VM, i: Instruction) = vm.pc = int(NumberValue(i.value).value)
 proc labelJump(vm: VM, i: Instruction) = vm.pc = vm.labels[StringValue(i.value).value]
@@ -64,8 +64,7 @@ proc run*(vm: VM) =
     vm.findLabels
     while vm.pc < vm.program.len - 1:
         vm.pc.inc
-        #echo vm.program[vm.pc].kind
-        case vm.program[vm.pc].kind:
+        case vm.peek.kind:
             of HALTINST: return
             of NOPINST, LABELINST: discard # No Operation Instruction
             of PRINTINST: echo vm.pop
@@ -115,7 +114,7 @@ proc run*(vm: VM) =
                 vm.push(lteInst(a, b))
             of JUMPINST: vm.labelJump(vm.advance)
             of RJUMPINST: vm.jump(vm.advance)
-            of FUNINST:
+            of FUNINST, STDFUNINST:
                 # vm.dumpStack
                 let
                     # Do not re-order theese!
@@ -125,7 +124,8 @@ proc run*(vm: VM) =
                     fun = funInst(startLabel, vm.frames[vm.frames.len - 1], int(NumberValue(arguments).value))
                 vm.frames[vm.frames.len - 1].heap["f"] = fun # Self reference to function
                 vm.frames.add(newFrame(vm.frames[vm.frames.len - 1].return_address, vm.frames[vm.frames.len - 1].heap))
-                vm.push(fun) # Push the function value to the stack
+                if vm.peek.kind == FUNINST:
+                    vm.push(fun) # Push the function value to the stack
                 vm.labelJump(StringValue(endLabel))
                 # vm.dumpStack
             of CALLINST:
@@ -145,7 +145,12 @@ proc run*(vm: VM) =
                 let inst = vm.advance # Always consume the next instruction
                 if vm.pop.branchfInst:
                     vm.labelJump(inst)
-            of STOREINST: vm.frames[vm.frames.len - 1].heap[StringValue(vm.advance.value).value] = vm.pop
+            of STOREINST:
+                let value = StringValue(vm.advance.value).value
+                if value == "f":
+                    echo "The 'f' variable name is reserved to function self-reference at the moment."
+                    quit()
+                vm.frames[vm.frames.len - 1].heap[value] = vm.pop
             of LOADINST:
                 let
                     key = StringValue(vm.advance.value).value
@@ -180,5 +185,5 @@ proc run*(vm: VM) =
             of ACCESSINST: vm.push(accessInst(vm.pop, vm.pop))
             of LENINST: vm.push(lenInst(vm.pop))
             else:
-                echo "Unknown operation " & $vm.program[vm.pc].kind
+                echo "Unknown operation " & $vm.peek.kind
                 quit()
