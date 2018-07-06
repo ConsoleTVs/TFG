@@ -197,8 +197,13 @@ proc run*(vm: VM) =
                     quit()
                 if index of NumberValue and frame.heap[variable] of ListValue:
                     # It's a list access
-                    var list = ListValue(frame.heap[variable])
-                    list.values[int(NumberValue(index).value)] = value
+                    var
+                        list = ListValue(frame.heap[variable])
+                        i = int(NumberValue(index).value)
+                    if i > list.values.len - 1 or i < 0:
+                        echo $i & " is out of index"
+                        quit()
+                    list.values[i] = value
                 else:
                     echo "Unknown combination of variable and index"
                     quit()
