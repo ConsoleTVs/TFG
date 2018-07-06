@@ -6,7 +6,9 @@ import vm, instructions, values, rules, tokens
     AST optimizations because they are done just before creating the bytecode.
 
     Current Optimizations:
-        -   Dead code elimination
+        -   Dead code elimination (ExpressionStatement)
+        -   Unreachable code elimination (Block)
+        -
 
 ]##
 
@@ -91,6 +93,12 @@ method codegen*(vm: VM, n: Variable) =
 method codegen*(vm: VM, n: Assign) =
     vm.codegen(n.value)
     vm.add(STOREINST)
+    vm.add(VALUEINST, StringValue(value: n.name.lexeme))
+
+method codegen*(vm: VM, n: AssignAccess) =
+    vm.codegen(n.index)
+    vm.codegen(n.value)
+    vm.add(STOREACCESSINST)
     vm.add(VALUEINST, StringValue(value: n.name.lexeme))
 
 method codegen*(vm: VM, n: Logical) =
@@ -215,5 +223,6 @@ method codegen*(vm: VM, n: SimpleFunction) =
 
 method codegen*(vm: VM, n: Access) =
     vm.codegen(n.index)
-    vm.codegen(n.item)
+    vm.add(LOADINST)
+    vm.add(VALUEINST, StringValue(value: n.item.lexeme))
     vm.add(ACCESSINST)

@@ -1,4 +1,4 @@
-import tables, instructions, values, vm, codegen
+import tables, ../instructions, ../values, ../vm, ../codegen
 
 type
     Function = tuple
@@ -15,6 +15,14 @@ let lib*: Table[string, Function] = {
         newInstruction(LOADINST),
         newInstruction(VALUEINST, StringValue(value: "e")),
         newInstruction(LENINST),
+        newInstruction(RETURNINST)
+    ]),
+    "push": createFun(@["e", "l"], @[
+        newInstruction(LOADINST),
+        newInstruction(VALUEINST, StringValue(value: "e")),
+        newInstruction(LOADINST),
+        newInstruction(VALUEINST, StringValue(value: "l")),
+        newInstruction(PUSHLISTINST),
         newInstruction(RETURNINST)
     ])
 }.toTable

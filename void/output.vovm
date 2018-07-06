@@ -13,31 +13,73 @@
 *_1:
 	PUSH "*_2"
 	PUSH "*_3"
-	PUSH 1.0
-	FUN
+	PUSH 2.0
+	STDFUN
 *_2:
-	STORE "a"
-	PUSH 1.0
+	STORE "e"
+	STORE "l"
+	LOAD "e"
+	LOAD "l"
+	PUSHLIST
 	RETURN
 	PUSH none
 	RETURN
 *_3:
-	STORE "test"
-	PUSH 500000.0
+	PUSH "hehe"
+	PUSH 2.0
+	MUL
+	PUSH false
+	PUSH true
+	ADD
+	PUSH true
+	PUSH true
+	ADD
+	PUSH 2.0
+	MUL
+	PUSH 1.0
+	NEG
+	PUSH 5.0
+	PUSH 4.0
+	PUSH 3.0
+	PUSH 2.0
+	PUSH 1.0
+	LIST 9.0
+	STORE "list"
+	PUSH 0.0
 	STORE "a"
 *_4:
 	LOAD "a"
-	PUSH 0.0
-	GT
-	BRANCHF "*_5"
-	LOAD "a"
-	LOAD "test"
+	LOAD "list"
+	LOAD "len"
 	PUSH 1.0
 	CALL
+	LT
+	BRANCHF "*_5"
+	LOAD "a"
+	LOAD "list"
+	ACCESS
+	PRINT
 	LOAD "a"
 	PUSH 1.0
-	SUB
+	ADD
 	STORE "a"
 	JUMP "*_4"
 *_5:
+	PUSH 1.0
+	PUSH 1.0
+	LOAD "list"
+	ACCESS
+	PUSH 2.0
+	MUL
+	STOREACCESS
+"list"
+	LIST 0.0
+	STORE "list2"
+	LOAD "list"
+	PUSH "Test"
+	LOAD "push"
+	PUSH 2.0
+	CALL
+	LOAD "list"
+	PRINT
 	HALT

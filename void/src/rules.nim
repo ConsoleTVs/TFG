@@ -44,6 +44,11 @@ type
         name*: Token
         value*: Expression
 
+    AssignAccess* = ref object of Expression
+        name*: Token
+        index*: Expression
+        value*: Expression
+
     Logical* = ref object of Expression
         operator*: Token
         left*, right*: Expression
@@ -54,7 +59,7 @@ type
         arguments*: seq[Expression]
 
     Access* = ref object of Expression
-        item*: Expression
+        item*: Token
         index*: Expression
 
 method `$`*(t: Expression): string {.base.} = "Expression()"
@@ -91,7 +96,7 @@ method `$`*(t: Call): string =
         result &= $i & ", "
     result &= "])"
 
-method `$`*(t: Access): string = "Access(" & $t.item & ", " & $t.index & ")"
+method `$`*(t: Access): string = "Access(" & t.item.lexeme & ", " & $t.index & ")"
 
 #[
     Statemets

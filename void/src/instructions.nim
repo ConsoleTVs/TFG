@@ -37,7 +37,7 @@ type
         LTINST = "LT" # Lower than
         LTEINST = "LTE" # Lower or equal than
         JUMPINST = "JUMP" # Jump
-        RJUMPINST = "RJUMP" # Relative Jump
+        AJUMPINST = "RJUMP" # Absolute Jump
         BRANCHTINST = "BRANCHT" # Branch if true
         BRANCHFINST = "BRANCHF" # Branch if false
         STOREINST = "STORE" # Store variable
@@ -49,9 +49,11 @@ type
         PUSHPCOFFSETINST = "PUSHPCOFFSET" # Push the current program counter + offset
         PUSHSCOPEINST = "PUSHSCOPE" # Push the current scope
         POPARGUMENTSINST = "POPARGUMENTS" # Instruction to pop function arguments
-        LISTINST = "LIST"
-        ACCESSINST = "ACCESS"
-        LENINST = "LEN"
+        LISTINST = "LIST" # Create a list from the stack
+        ACCESSINST = "ACCESS" # Acces a key from a list or dictionary
+        LENINST = "LEN" # Length of a variable
+        PUSHLISTINST = "PUSHLIST" # Push a new element to a list
+        STOREACCESSINST = "STOREACCESS" # Stores a value into an access variable
 
     Instruction* = ref tuple
         ##[
@@ -165,3 +167,6 @@ method accessInst*(a: ListValue, i: NumberValue): Value =
 method lenInst*(a: Value): Value {.base.} = "Wrong len instruction".abort
 method lenInst*(a: StringValue): Value = NumberValue(value: float(a.value.len))
 method lenInst*(a: ListValue): Value = NumberValue(value: float(a.values.len))
+
+method pushListInst*(list, value: Value): Value {.base.} = "Wrong push list instruction".abort
+method pushListInst*(list: ListValue, value: Value): Value = list.values.add(value); list

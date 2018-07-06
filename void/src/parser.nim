@@ -121,6 +121,10 @@ proc primary(parser: Parser): Expression =
     if parser.match(TOK_LEFT_SPAREN):
         # It's a list, we need to get all of it's values
         var values: seq[Expression] = @[]
+        # Check if the list is empty
+        if parser.match(TOK_RIGHT_SPAREN):
+            return List(values: values)
+        # Get all of it's values
         while true:
             if parser.check(TOK_EOF):
                 echo "Unfinished list. Expecting ']' at the end of the list"
@@ -164,7 +168,7 @@ proc finishAccess(parser: Parser, item: Expression): Expression =
     let index = parser.expression
     discard parser.consume(TOK_RIGHT_SPAREN, "Expect ']' after index access.")
     return Access(
-        item: item,
+        item: Variable(item).name,
         index: index
     );
 
@@ -275,16 +279,24 @@ proc orOperator(parser: Parser): Expression =
 
 proc assignment(parser: Parser): Expression =
     ##[
-        assignment: identifier "=" expression
+        assignment: identifier ( "[" expression "]" )? "=" expression
             | orOperator
             ;
     ]##
     result = parser.orOperator
     if parser.match(TOK_EQUAL):
+        # It's a variable assignment
         if result of Variable:
             return Assign(
                 name: Variable(result).name,
-                value: parser.assignment
+                value: parser.expression
+            )
+        elif result of Access:
+            # It's an access assignment
+            return AssignAccess(
+                name: Access(result).item,
+                index: Access(result).index,
+                value: parser.expression
             )
         echo "Invalid assignment target"
         quit()

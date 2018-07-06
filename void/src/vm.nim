@@ -113,7 +113,7 @@ proc run*(vm: VM) =
                 let a, b = vm.pop
                 vm.push(lteInst(a, b))
             of JUMPINST: vm.labelJump(vm.advance)
-            of RJUMPINST: vm.jump(vm.advance)
+            of AJUMPINST: vm.jump(vm.advance)
             of FUNINST, STDFUNINST:
                 # vm.dumpStack
                 let
@@ -184,6 +184,24 @@ proc run*(vm: VM) =
                 vm.push(ListValue(values: values))
             of ACCESSINST: vm.push(accessInst(vm.pop, vm.pop))
             of LENINST: vm.push(lenInst(vm.pop))
+            of PUSHLISTINST: vm.push(pushListInst(vm.pop, vm.pop))
+            of STOREACCESSINST:
+                let
+                    # Do not reorder the pops!
+                    frame = vm.frames[vm.frames.len - 1]
+                    value = vm.pop
+                    index = vm.pop
+                    variable = StringValue(vm.advance.value).value
+                if not frame.heap.hasKey(variable):
+                    echo "Undefined variable " & variable
+                    quit()
+                if index of NumberValue and frame.heap[variable] of ListValue:
+                    # It's a list access
+                    var list = ListValue(frame.heap[variable])
+                    list.values[int(NumberValue(index).value)] = value
+                else:
+                    echo "Unknown combination of variable and index"
+                    quit()
             else:
                 echo "Unknown operation " & $vm.peek.kind
                 quit()

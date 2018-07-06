@@ -1,4 +1,7 @@
-import parseopt, lexer, rules, parser, vm, instructions, values, codegen, bytecode, stdlib, tables, bytecode_optimizer
+import parseopt, lexer, rules, parser, vm, instructions, values, codegen, bytecode, tables, bytecode_optimizer
+
+# Void standard library
+import library.std
 
 #[
     Void Programming Language
@@ -23,6 +26,8 @@ proc run(input: string) =
 
     # Add the program instructions
     for i in ast:
+        echo i
+        echo ""
         vm.codegen(i)
 
     # Add the HALT instruction to determine end of program
