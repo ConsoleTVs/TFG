@@ -1,5 +1,7 @@
 # Important Notice
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/7c890f0e2f1b45529498398aa0b0c0f2)](https://app.codacy.com/app/consoletvs/TFG?utm_source=github.com&utm_medium=referral&utm_content=ConsoleTVs/TFG&utm_campaign=badger)
+
 This repo is used to store the batchelor degree thesis and all the work involved.
 
 ## Generic Language
