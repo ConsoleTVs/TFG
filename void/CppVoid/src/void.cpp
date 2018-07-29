@@ -29,6 +29,7 @@
 #include <fstream>
 #include "../include/opcode.hpp"
 #include "../include/program.hpp"
+#include "../include/compiler.hpp"
 #include "../include/vm.hpp"
 
 static void prompt()
@@ -44,60 +45,60 @@ static void prompt()
 
 static void file(const char *file)
 {
-    // Load from file
+    // Load from fileW
 }
 
 int main(int argc, char *argv[])
 {
     // prompt();
-    Program program;
     // a = 0
-    addOpCode(&program, OP_CONSTANT, 1);
-    addOpCode(&program, addConstant(&program, createValue(0.0)), 2);
-    addOpCode(&program, OP_STORE, 3);
-    addOpCode(&program, addConstant(&program, createValue(std::string("a"))), 4);
+    addOpCode(OP_CONSTANT, 1);
+    addOpCode(addConstant(createValue(0.0)), 2);
+    addOpCode(OP_STORE, 3);
+    addOpCode(addConstant(createValue(std::string("a"))), 4);
     // b = 0
-    addOpCode(&program, OP_CONSTANT, 5);
-    addOpCode(&program, addConstant(&program, createValue(0.0)), 6);
-    addOpCode(&program, OP_STORE, 7);
-    addOpCode(&program, addConstant(&program, createValue(std::string("b"))), 8);
+    addOpCode(OP_CONSTANT, 5);
+    addOpCode(addConstant(createValue(0.0)), 6);
+    addOpCode(OP_STORE, 7);
+    addOpCode(addConstant(createValue(std::string("b"))), 8);
     // while (a < 6000000)
-    addOpCode(&program, OP_LOAD, 9);
-    addOpCode(&program, addConstant(&program, createValue(std::string("a"))), 10);
-    addOpCode(&program, OP_CONSTANT, 11);
-    addOpCode(&program, addConstant(&program, createValue(6000000.0)), 12);
-    addOpCode(&program, OP_LT, 13);
-    addOpCode(&program, OP_BRANCH_FALSE, 14);
-    addOpCode(&program, addConstant(&program, createValue(20.0)), 15);
+    addOpCode(OP_LOAD, 9);
+    addOpCode(addConstant(createValue(std::string("a"))), 10);
+    addOpCode(OP_CONSTANT, 11);
+    addOpCode(addConstant(createValue(6000000.0)), 12);
+    addOpCode(OP_LT, 13);
+    addOpCode(OP_BRANCH_FALSE, 14);
+    addOpCode(addConstant(createValue(20.0)), 15);
     // b = a - b / 2;
-    addOpCode(&program, OP_LOAD, 16);
-    addOpCode(&program, addConstant(&program, createValue(std::string("a"))), 17);
-    addOpCode(&program, OP_LOAD, 18);
-    addOpCode(&program, addConstant(&program, createValue(std::string("b"))), 19);
-    addOpCode(&program, OP_CONSTANT, 20);
-    addOpCode(&program, addConstant(&program, createValue(2.0)), 21);
-    addOpCode(&program, OP_DIV, 22);
-    addOpCode(&program, OP_SUB, 23);
-    addOpCode(&program, OP_STORE, 24);
-    addOpCode(&program, addConstant(&program, createValue(std::string("b"))), 25);
+    addOpCode(OP_LOAD, 16);
+    addOpCode(addConstant(createValue(std::string("a"))), 17);
+    addOpCode(OP_LOAD, 18);
+    addOpCode(addConstant(createValue(std::string("b"))), 19);
+    addOpCode(OP_CONSTANT, 20);
+    addOpCode(addConstant(createValue(2.0)), 21);
+    addOpCode(OP_DIV, 22);
+    addOpCode(OP_SUB, 23);
+    addOpCode(OP_STORE, 24);
+    addOpCode(addConstant(createValue(std::string("b"))), 25);
     // a = a + 1;
-    addOpCode(&program, OP_LOAD, 26);
-    addOpCode(&program, addConstant(&program, createValue(std::string("a"))), 27);
-    addOpCode(&program, OP_CONSTANT, 28);
-    addOpCode(&program, addConstant(&program, createValue(1.0)), 29);
-    addOpCode(&program, OP_ADD, 30);
-    addOpCode(&program, OP_STORE, 31);
-    addOpCode(&program, addConstant(&program, createValue(std::string("a"))), 32);
+    addOpCode(OP_LOAD, 26);
+    addOpCode(addConstant(createValue(std::string("a"))), 27);
+    addOpCode(OP_CONSTANT, 28);
+    addOpCode(addConstant(createValue(1.0)), 29);
+    addOpCode(OP_ADD, 30);
+    addOpCode(OP_STORE, 31);
+    addOpCode(addConstant(createValue(std::string("a"))), 32);
     // Back to the start of the loop
-    addOpCode(&program, OP_RJUMP, 33);
-    addOpCode(&program, addConstant(&program, createValue(-25.0)), 34);
+    addOpCode(OP_RJUMP, 33);
+    addOpCode(addConstant(createValue(-25.0)), 34);
     // End of loop
-    addOpCode(&program, OP_LOAD, 35);
-    addOpCode(&program, addConstant(&program, createValue(std::string("b"))), 36);
+    addOpCode(OP_LOAD, 35);
+    addOpCode(addConstant(createValue(std::string("b"))), 36);
     // Return the result
-    addOpCode(&program, OP_RETURN, 37);
+    addOpCode(OP_RETURN, 37);
 
     initVM();
-    // interpret(&program);
+    // interpret(program);
+    interpret();
     //freeVM();
 }

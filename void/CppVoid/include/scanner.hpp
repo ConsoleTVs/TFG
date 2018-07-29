@@ -18,7 +18,7 @@ typedef struct {
     unsigned int line;
 } Scanner;
 
-Scanner scanner;
+extern Scanner *scanner;
 
 void initScanner(const char *source);
 

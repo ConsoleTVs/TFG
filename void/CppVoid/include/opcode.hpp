@@ -50,19 +50,19 @@ typedef enum {
     OP_RETURN
 } OpCode;
 
-bool isTrue(Value a);
-Value minusInst(Value a);
-Value notInst(Value a);
-Value addInst(Value a, Value b);
-Value subInst(Value a, Value b);
-Value mulInst(Value a, Value b);
-Value divInst(Value a, Value b);
-Value eqInst(Value a, Value b);
-Value neqInst(Value a, Value b);
-Value ltInst(Value a, Value b);
-Value lteInst(Value a, Value b);
-Value htInst(Value a, Value b);
-Value hteInst(Value a, Value b);
-Value lenInst(Value a);
+bool isTrue(Value *a);
+Value minusInst(Value *a);
+Value notInst(Value *a);
+Value addInst(Value *a, Value *b);
+Value subInst(Value *a, Value *b);
+Value mulInst(Value *a, Value *b);
+Value divInst(Value *a, Value *b);
+Value eqInst(Value *a, Value *b);
+Value neqInst(Value *a, Value *b);
+Value ltInst(Value *a, Value *b);
+Value lteInst(Value *a, Value *b);
+Value htInst(Value *a, Value *b);
+Value hteInst(Value *a, Value *b);
+Value lenInst(Value *a);
 
 #endif

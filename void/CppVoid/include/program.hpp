@@ -20,7 +20,9 @@ typedef struct {
     std::vector<unsigned int> lines;
 } Program;
 
-void addOpCode(Program *program, uint8_t opcode, const unsigned int line);
-int addConstant(Program* program, Value value);
+extern Program *program;
+
+void addOpCode(uint8_t opcode, const unsigned int line);
+int addConstant(Value value);
 
 #endif

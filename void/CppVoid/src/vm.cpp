@@ -9,83 +9,85 @@
 
 #include "../include/vm.hpp"
 #include "../include/compiler.hpp"
-#include <iostream>
+
+#define PUSH(value) *vm.topStack = (value); vm.topStack++
+#define POP() --vm.topStack
 
 /* Helpers defined for the operations performed by the virtual machine */
 #define READ_INSTRUCTION() (*vm.pc++)
 #define READ_CONSTANT() (vm.program->constants[READ_INSTRUCTION()])
 #define READ_INT() ((int) (READ_CONSTANT().nvalue))
 #define READ_VARIABLE() (*(READ_CONSTANT().svalue))
-#define BINARY_POP() Value b = pop(); Value a = pop()
+#define BINARY_POP() Value *b = POP(); Value *a = POP()
 
 /* Push a constant into the stack */
-#define DO_OP_CONSTANT() { push(READ_CONSTANT()); break; }
+#define DO_OP_CONSTANT() { PUSH(READ_CONSTANT()); break; }
 
 /* Unary minus operation: -a */
-#define DO_OP_MINUS() { push(minusInst(pop())); break; }
+#define DO_OP_MINUS() { PUSH(minusInst(POP())); break; }
 
 /* Unary not operation: !a */
-#define DO_OP_NOT() { push(notInst(pop())); break; }
+#define DO_OP_NOT() { PUSH(notInst(POP())); break; }
 
 /* Binary addition operation: a + b */
-#define DO_OP_ADD() { BINARY_POP(); push(addInst(a, b)); break; }
+#define DO_OP_ADD() { BINARY_POP(); PUSH(addInst(a, b)); break; }
 
 /* Binary subtraction operation: a - b */
-#define DO_OP_SUB() { BINARY_POP(); push(subInst(a, b)); break; }
+#define DO_OP_SUB() { BINARY_POP(); PUSH(subInst(a, b)); break; }
 
 /* Binary multiplication operation: a * b */
-#define DO_OP_MUL() { BINARY_POP(); push(mulInst(a, b)); break; }
+#define DO_OP_MUL() { BINARY_POP(); PUSH(mulInst(a, b)); break; }
 
 /* Binary division operation: a / b */
-#define DO_OP_DIV() { BINARY_POP(); push(divInst(a, b)); break; }
+#define DO_OP_DIV() { BINARY_POP(); PUSH(divInst(a, b)); break; }
 
 /* Binary equal operation: a == b */
-#define DO_OP_EQ() { BINARY_POP(); push(eqInst(a, b)); break; }
+#define DO_OP_EQ() { BINARY_POP(); PUSH(eqInst(a, b)); break; }
 
 /* Binary not equal operation: a != b */
-#define DO_OP_NEQ() { BINARY_POP(); push(neqInst(a, b)); break; }
+#define DO_OP_NEQ() { BINARY_POP(); PUSH(neqInst(a, b)); break; }
 
 /* Binary lower than operation: a < b */
-#define DO_OP_LT() { BINARY_POP(); push(ltInst(a, b)); break; }
+#define DO_OP_LT() { BINARY_POP(); PUSH(ltInst(a, b)); break; }
 
 /* Binary lower than or equal to operation: a <= b */
-#define DO_OP_LTE() { BINARY_POP(); push(lteInst(a, b)); break; }
+#define DO_OP_LTE() { BINARY_POP(); PUSH(lteInst(a, b)); break; }
 
 /* Binary higher than operation: a > b */
-#define DO_OP_HT() { BINARY_POP(); push(htInst(a, b)); break; }
+#define DO_OP_HT() { BINARY_POP(); PUSH(htInst(a, b)); break; }
 
 /* Binary higher than or equal to operation: a >= b */
-#define DO_OP_HTE() { BINARY_POP(); push(hteInst(a, b)); break; }
+#define DO_OP_HTE() { BINARY_POP(); PUSH(hteInst(a, b)); break; }
 
 /* Relative jump from the current position */
 #define DO_OP_RJUMP() { vm.pc += READ_INT() - 1; break; }
 
 /* Branch (RJUMP) if the top of the stack is true */
-#define DO_OP_BRANCH_TRUE() { int position = READ_INT() - 1; vm.pc += isTrue(pop()) ? position : 0; break; }
+#define DO_OP_BRANCH_TRUE() { int position = READ_INT() - 1; vm.pc += isTrue(POP()) ? position : 0; break; }
 
 /* Branch (RJUMP) if the top of the stack is false */
-#define DO_OP_BRANCH_FALSE() { int position = READ_INT() - 1; vm.pc += isTrue(pop()) ? 0 : position; break; }
+#define DO_OP_BRANCH_FALSE() { int position = READ_INT() - 1; vm.pc += isTrue(POP()) ? 0 : position; break; }
 
 /* Store value to a variable from the frame heap: variable = expression */
-#define DO_OP_STORE() { (*vm.topFrame).heap[READ_VARIABLE()] = pop(); break; }
+#define DO_OP_STORE() { vm.topFrame->heap[READ_VARIABLE()] = *POP(); break; }
 
 /* Store to an accessed field: variable[index] = expression*/
-#define DO_OP_STORE_ACCESS() { (*(*vm.topFrame).heap[READ_VARIABLE()].lvalues)[pop().nvalue] = pop(); break; }
+#define DO_OP_STORE_ACCESS() { (*vm.topFrame->heap[READ_VARIABLE()].lvalues)[POP()->nvalue] = *POP(); break; }
 
 /* Load a value from a variable from the frame heap */
-#define DO_OP_LOAD() { push((*vm.topFrame).heap[READ_VARIABLE()]); break; }
+#define DO_OP_LOAD() { PUSH((*vm.topFrame).heap[READ_VARIABLE()]); break; }
 
 /* Push a new list value from N elements in the stack */
-#define DO_OP_LIST() { std::vector<Value> v; for (int pops = READ_INT(); pops > 0; pops--) v.push_back(pop()); push(createValue(v)); }
+#define DO_OP_LIST() { std::vector<Value> v; for (int pops = READ_INT(); pops > 0; pops--) v.push_back(*POP()); PUSH(createValue(v)); }
 
 /* Push a value from a list item: variable[index] */
-#define DO_OP_ACCESS() { push((*(*vm.topFrame).heap[READ_VARIABLE()].lvalues)[pop().nvalue]); break; }
+#define DO_OP_ACCESS() { PUSH((*vm.topFrame->heap[READ_VARIABLE()].lvalues)[POP()->nvalue]); break; }
 
 /* pushes the value length of the top of the stack */
-#define DO_OP_LEN() { push(lenInst(pop())); break; }
+#define DO_OP_LEN() { PUSH(lenInst(POP())); break; }
 
 /* Return */
-#define DO_OP_RETURN() { printValue(pop()); printf("\n"); return; }
+#define DO_OP_RETURN() { printValue(*POP()); printf("\n"); return; }
 
 /* Unknown OP code found */
 #define DO_OP_UNKNOWN() { printf("Unknown instruction at line %u\n", vm.program->lines[(int) (vm.pc - &vm.program->code[0])]); break; }
@@ -108,17 +110,9 @@ void initVM()
     resetFrames();
 }
 
-void push(Value value)
-{
-    *vm.topStack = value;
-    vm.topStack++;
-}
-
-Value pop()
-{
-    vm.topStack--;
-    return *vm.topStack;
-}
+/* Typical push and pop instructions. Replaced by the macros. */
+void push(Value value) { *vm.topStack = value; vm.topStack++; }
+Value* pop() { return --vm.topStack; }
 
 void run()
 {
@@ -160,10 +154,17 @@ void run()
     }
 }
 
+void interpret()
+{
+    vm.program = program;
+    vm.pc = &vm.program->code[0];
+    run();
+}
+
 void interpret(const char *source)
 {
     compile(source);
-    //vm.program = program;
+    vm.program = program;
     vm.pc = &vm.program->code[0];
     run();
 }

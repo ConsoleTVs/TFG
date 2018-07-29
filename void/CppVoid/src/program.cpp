@@ -9,13 +9,15 @@
 
 #include "../include/program.hpp"
 
-void addOpCode(Program *program, uint8_t opcode, const unsigned int line)
+Program *program = new Program;
+
+void addOpCode(uint8_t opcode, const unsigned int line)
 {
     program->code.push_back(opcode);
     program->lines.push_back(line);
 }
 
-int addConstant(Program* program, Value value)
+int addConstant(Value value)
 {
     program->constants.push_back(value);
     return program->constants.size() - 1;

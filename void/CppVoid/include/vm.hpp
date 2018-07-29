@@ -35,8 +35,9 @@ typedef struct {
 
 void initVM();
 void push(Value value);
-Value pop();
+Value* pop();
 void run();
+void interpret(); // For debug purposes
 void interpret(const char *source);
 
 #endif

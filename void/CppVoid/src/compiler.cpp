@@ -29,39 +29,39 @@ unsigned int Statement::compile()
 
 unsigned int Number::compile()
 {
-    addOpCode(&program, OP_CONSTANT, this->line);
-    addOpCode(&program, addConstant(&program, createValue(this->value)), this->line);
+    addOpCode(OP_CONSTANT, this->line);
+    addOpCode(addConstant(createValue(this->value)), this->line);
     return 2;
 }
 
 unsigned int String::compile()
 {
-    addOpCode(&program, OP_CONSTANT, this->line);
-    addOpCode(&program, addConstant(&program, createValue(this->value)), this->line);
+    addOpCode(OP_CONSTANT, this->line);
+    addOpCode(addConstant(createValue(this->value)), this->line);
     return 2;
 }
 
 unsigned int Boolean::compile()
 {
-    addOpCode(&program, OP_CONSTANT, this->line);
-    addOpCode(&program, addConstant(&program, createValue(this->value)), this->line);
+    addOpCode(OP_CONSTANT, this->line);
+    addOpCode(addConstant(createValue(this->value)), this->line);
     return 2;
 }
 
 unsigned int List::compile()
 {
     unsigned int instructions = 0;
-    for (unsigned int i = this->value.size() - 1; i >= 0; i--) {
-        instructions += this->value[i]->compile();
+    for (auto value : this->value) {
+        instructions += value->compile();
     }
-    addOpCode(&program, OP_LIST, this->line);
+    addOpCode(OP_LIST, this->line);
     return instructions + 1;
 }
 
 unsigned int None::compile()
 {
-    addOpCode(&program, OP_CONSTANT, this->line);
-    addOpCode(&program, addConstant(&program, createValue()), this->line);
+    addOpCode(OP_CONSTANT, this->line);
+    addOpCode(addConstant(createValue()), this->line);
     return 2;
 }
 
@@ -87,14 +87,14 @@ unsigned int Binary::compile()
 
 unsigned int Variable::compile()
 {
-    addOpCode(&program, OP_LOAD, this->line);
-    addOpCode(&program, addConstant(&program, createValue(this->name)), this->line);
+    addOpCode(OP_LOAD, this->line);
+    addOpCode(addConstant(createValue(this->name)), this->line);
     return 2;
 }
 
 unsigned int Assign::compile()
 {
-    addOpCode(&program, OP_STORE, this->line);
-    addOpCode(&program, addConstant(&program, createValue(this->name)), this->line);
+    addOpCode(OP_STORE, this->line);
+    addOpCode(addConstant(createValue(this->name)), this->line);
     return 2;
 }

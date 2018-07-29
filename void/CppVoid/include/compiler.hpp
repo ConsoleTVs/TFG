@@ -14,8 +14,6 @@
 #include <string>
 #include <vector>
 
-Program program;
-
 void compile(const char *source);
 
 class Expression {
