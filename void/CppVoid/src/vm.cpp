@@ -111,8 +111,8 @@ void initVM()
 }
 
 /* Typical push and pop instructions. Replaced by the macros. */
-void push(Value value) { *vm.topStack = value; vm.topStack++; }
-Value* pop() { return --vm.topStack; }
+// void push(Value value) { *vm.topStack = value; vm.topStack++; }
+// Value* pop() { return --vm.topStack; }
 
 void run()
 {
