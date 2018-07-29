@@ -37,6 +37,6 @@ void initVM();
 void push(Value value);
 Value pop();
 void run();
-void interpret(std::string source);
+void interpret(const char *source);
 
 #endif

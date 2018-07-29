@@ -88,7 +88,7 @@
 #define DO_OP_RETURN() { printValue(pop()); printf("\n"); return; }
 
 /* Unknown OP code found */
-#define OP_UNKNOWN() { printf("Unknown instruction at line %d\n", vm.program->lines[(int) (vm.pc - &vm.program->code[0])]); break; }
+#define DO_OP_UNKNOWN() { printf("Unknown instruction at line %u\n", vm.program->lines[(int) (vm.pc - &vm.program->code[0])]); break; }
 
 static VM vm;
 
@@ -124,7 +124,7 @@ void run()
 {
     for (uint8_t instruction;;) {
         #ifdef DEBUG
-            printf("Inst: %d - Offset: %d - Line: %d\n", instruction, (int)(vm.pc - &vm.program->code[0]), vm.program->lines[(int)(vm.pc - &vm.program->code[0])]);
+            printf("Inst: %d - Offset: %d - Line: %u\n", instruction, (int)(vm.pc - &vm.program->code[0]), vm.program->lines[(int)(vm.pc - &vm.program->code[0])]);
             printf("Stack: -> ");
             for (Value* slot = vm.stack; slot < vm.topStack; slot++) {
                 printf("[ "); printValue(*slot); printf(" ]");
@@ -155,7 +155,7 @@ void run()
             case OP_ACCESS: DO_OP_ACCESS()
             case OP_LEN: DO_OP_LEN()
             case OP_RETURN: DO_OP_RETURN()
-            default: OP_UNKNOWN()
+            default: DO_OP_UNKNOWN()
         }
     }
 }
