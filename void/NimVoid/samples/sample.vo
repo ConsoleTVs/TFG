@@ -1,0 +1,31 @@
+# Declaring a class just needs a function as a constructor
+class Collection = (items) -> self.items = items;
+
+# Declaring class functions
+Collection.map = (callback) => {
+    for (item in self.items) -> callaback(item);
+};
+
+# Should be the same as
+Collection.map = (callback) -> for item in self.items -> callaback(item);
+
+# Calling class functions and get a class prop
+print Collection([1, 2, 3, 4]).map((item) -> item * 2).items;
+
+# This declaration of test funciton
+test = () -> { 'sample': 123 };
+
+# Is the same as:
+test2 = () => { return { 'sample': 123 }; };
+
+# Example addition
+add = (a, b) -> a + b;
+
+# Example funciton with control flow
+example = (n) => {
+    if (n < 10) => {
+        return n;
+    } else => {
+        return n - 10;
+    }
+}

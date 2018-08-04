@@ -13,6 +13,7 @@ Value createValue()
 {
     Value value;
     value.kind = VALUE_NONE;
+
     return value;
 }
 
@@ -21,6 +22,7 @@ Value createValue(double a)
     Value value;
     value.kind = VALUE_NUMBER;
     value.nvalue = a;
+
     return value;
 }
 
@@ -29,6 +31,7 @@ Value createValue(bool a)
     Value value;
     value.kind = VALUE_BOOLEAN;
     value.bvalue = a;
+
     return value;
 }
 
@@ -37,6 +40,7 @@ Value createValue(std::string a)
     Value value;
     value.kind = VALUE_STRING;
     value.svalue = new std::string(a);
+
     return value;
 }
 

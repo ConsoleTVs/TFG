@@ -50,7 +50,8 @@ static void file(const char *file)
 
 int main(int argc, char *argv[])
 {
-    // prompt();
+    prompt();
+    /*
     // a = 0
     addOpCode(OP_CONSTANT, 1);
     addOpCode(addConstant(createValue(0.0)), 2);
@@ -96,9 +97,9 @@ int main(int argc, char *argv[])
     addOpCode(addConstant(createValue(std::string("b"))), 36);
     // Return the result
     addOpCode(OP_RETURN, 37);
-
-    initVM();
+    */
+    // initVM();
     // interpret(program);
-    interpret();
+    // interpret();
     //freeVM();
 }

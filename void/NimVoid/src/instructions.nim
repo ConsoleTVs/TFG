@@ -37,7 +37,7 @@ type
         LTINST = "LT" # Lower than
         LTEINST = "LTE" # Lower or equal than
         JUMPINST = "JUMP" # Jump
-        AJUMPINST = "RJUMP" # Absolute Jump
+        AJUMPINST = "AJUMP" # Absolute Jump
         BRANCHTINST = "BRANCHT" # Branch if true
         BRANCHFINST = "BRANCHF" # Branch if false
         STOREINST = "STORE" # Store variable

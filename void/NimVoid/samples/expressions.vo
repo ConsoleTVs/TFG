@@ -1,0 +1,17 @@
+1+1;
+10-5;
+1+1-1;
+2+2*2;
+2+2*2+2/2;
+(2+2)*2;
+false or false;
+false or true;
+true or true;
+true or false;
+true and true;
+false and false;
+false and true;
+true and false;
+false + true;
+"sample" * 3;
+3 * "sample";

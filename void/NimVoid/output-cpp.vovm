@@ -1,0 +1,50 @@
+*main:
+	PUSH "*_0"
+	PUSH "*_1"
+	PUSH 1.0
+	FUN
+*_0:
+	STORE "e"
+	LOAD "e"
+	LEN
+	RETURN
+	PUSH none
+	RETURN
+*_1:
+	PUSH "*_2"
+	PUSH "*_3"
+	PUSH 1.0
+	FUN
+*_2:
+	STORE "n"
+	LOAD "n"
+	PUSH 2.0
+	LT
+	BRANCHF "*_4"
+	LOAD "n"
+	RETURN
+*_4:
+	LOAD "n"
+	PUSH 1.0
+	SUB
+	LOAD "f"
+	PUSH 1.0
+	CALL
+	LOAD "n"
+	PUSH 2.0
+	SUB
+	LOAD "f"
+	PUSH 1.0
+	CALL
+	ADD
+	RETURN
+	PUSH none
+	RETURN
+*_3:
+	STORE "fib"
+	PUSH 28.0
+	LOAD "fib"
+	PUSH 1.0
+	CALL
+	PRINT
+	HALT

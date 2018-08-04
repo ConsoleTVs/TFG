@@ -46,8 +46,7 @@ type
 
     AssignAccess* = ref object of Expression
         name*: Token
-        index*: Expression
-        value*: Expression
+        index*, value*: Expression
 
     Logical* = ref object of Expression
         operator*: Token

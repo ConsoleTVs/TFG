@@ -20,5 +20,6 @@ void addOpCode(uint8_t opcode, const unsigned int line)
 int addConstant(Value value)
 {
     program->constants.push_back(value);
+
     return program->constants.size() - 1;
 }

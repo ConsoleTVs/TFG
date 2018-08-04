@@ -10,6 +10,8 @@
 #ifndef scanner_hpp
 #define scanner_hpp
 
+#include "../include/token.hpp"
+#include <vector>
 #include <string>
 
 typedef struct {
@@ -21,5 +23,6 @@ typedef struct {
 extern Scanner *scanner;
 
 void initScanner(const char *source);
+std::vector<Token> scan();
 
 #endif

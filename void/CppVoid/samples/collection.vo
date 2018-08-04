@@ -1,0 +1,15 @@
+class Collection -> (items)
+Collection.each -> (callback) => {
+    for (item in self.items) -> callback <- (item)
+    return self
+}
+Collection.map -> (callback) => {
+    i -> 0
+    while (i < len <- (items), i -> i + 1) -> self.items[i] -> callback <- (item)
+    return self
+}
+
+data -> Collection([1, 2, 3, 4, 5])
+# data.map(function () { return item * 2 }).each(function () { console.log(item) })
+data.map <- ((item) -> item * 2).each <- ((item) -> print <- (item))
+print <- (data.items)

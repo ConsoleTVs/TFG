@@ -1,10 +1,10 @@
 import instructions, values, vm
 
 type
-    Bytecode* = tuple
+    Bytecode* = ref tuple
         vm: VM
 
-proc newBytecode*(vm: VM): Bytecode = (vm: vm)
+proc newBytecode*(vm: VM): Bytecode = new result; result.vm = vm
 
 proc format(b: Bytecode, n: Instruction): string =
     case n.kind:
@@ -14,7 +14,7 @@ proc format(b: Bytecode, n: Instruction): string =
                 return "\"" & $n.value & "\"\n"
             else:
                 return $n.value & "\n"
-        of BRANCHTINST, BRANCHFINST, PUSHINST, JUMPINST, STOREINST, LOADINST, PUSHPCOFFSETINST, LISTINST:
+        of BRANCHTINST, BRANCHFINST, PUSHINST, JUMPINST, AJUMPINST, STOREINST, LOADINST, PUSHPCOFFSETINST, LISTINST:
             return "\t" & $n.kind & " "
         else: return "\t" & $n.kind & "\n"
 

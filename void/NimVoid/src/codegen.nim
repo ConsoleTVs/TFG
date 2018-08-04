@@ -8,7 +8,6 @@ import vm, instructions, values, rules, tokens
     Current Optimizations:
         -   Dead code elimination (ExpressionStatement)
         -   Unreachable code elimination (Block)
-        -
 
 ]##
 

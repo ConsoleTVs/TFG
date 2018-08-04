@@ -1,0 +1,51 @@
+*main:
+	PUSH "*_0"
+	PUSH "*_1"
+	PUSH 1.0
+	STDFUN
+*_0:
+	STORE "e"
+	LOAD "e"
+	LEN
+	RETURN
+	PUSH none
+	RETURN
+*_1:
+	PUSH "*_2"
+	PUSH "*_3"
+	PUSH 2.0
+	STDFUN
+*_2:
+	STORE "e"
+	STORE "l"
+	LOAD "e"
+	LOAD "l"
+	PUSHLIST
+	RETURN
+	PUSH none
+	RETURN
+*_3:
+	PUSH 0.0
+	STORE "a"
+	PUSH 0.0
+	STORE "b"
+*_4:
+	LOAD "a"
+	PUSH 6000000.0
+	LT
+	BRANCHF "*_5"
+	LOAD "a"
+	LOAD "b"
+	PUSH 2.0
+	DIV
+	SUB
+	STORE "b"
+	LOAD "a"
+	PUSH 1.0
+	ADD
+	STORE "a"
+	AJUMP 48.0
+*_5:
+	LOAD "b"
+	PRINT
+	HALT

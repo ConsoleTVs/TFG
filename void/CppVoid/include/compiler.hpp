@@ -22,6 +22,7 @@ class Expression {
 
         unsigned int virtual compile();
 };
+
 class Statement {
     public:
         unsigned int line;

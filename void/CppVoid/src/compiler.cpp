@@ -13,6 +13,8 @@
 void compile(const char *source)
 {
     initScanner(source);
+    auto tokens = scan();
+    printf("COMPILE DONE");
 }
 
 unsigned int Expression::compile()
@@ -97,4 +99,11 @@ unsigned int Assign::compile()
     addOpCode(OP_STORE, this->line);
     addOpCode(addConstant(createValue(this->name)), this->line);
     return 2;
+}
+
+unsigned int AssignAccess::compile()
+{
+    unsigned int instructions = this->value->compile() + this->index->compile();
+    addOpCode(OP_STORE_ACCESS, this->line);
+    return instructions + 1;
 }

@@ -1,8 +1,4 @@
-import parseopt, lexer, rules, parser, vm, instructions, values, codegen, bytecode, tables, bytecode_optimizer
-
-# Void standard library
-import library.std
-
+import parseopt, lexer, rules, parser, vm, instructions, values, codegen, bytecode, stdlib, tables
 #[
     Void Programming Language
     Copyright 2018 Erik Campobadal Forés <soc@erik.cat>
@@ -10,40 +6,42 @@ import library.std
 ]#
 
 proc run(input: string) =
-
-    # Initialize all variables
     var
         lexer = input.newLexer
         tokens = lexer.scan
         parser = tokens.newParser
         ast = parser.parse
-        vm = newVM(@[])
-        bytecode = newBytecode(vm)
-        bytecodeOptimizer = newBytecodeOptimizer(bytecode)
+
+    #for statement in ast:
+    #    echo $statement
+
+    #[
+        var instructions: seq[Instruction] = @[]
+        instructions.add(PushInst(value: NumberValue(value: 500)))
+        instructions.add(PushInst(value: NumberValue(value: 10)))
+        instructions.add(PushInst(value: NumberValue(value: 5)))
+        instructions.add(AdditionInst())
+        instructions.add(PushInst(value: NumberValue(value: 10)))
+        instructions.add(SubstractionInst())
+        instructions.add(PrintInst())
+        instructions.add(DivisionInst())
+    ]#
+
+    var
+        vm: VM = newVM(@[])
+        bytecode: Bytecode = (vm: vm)
 
     # Add the void standard library
     vm.addStdLib
 
     # Add the program instructions
     for i in ast:
-        echo i
-        echo ""
         vm.codegen(i)
 
-    # Add the HALT instruction to determine end of program
     vm.program.add(newInstruction(HALTINST))
-
-    # Optimize the bytecode
-    bytecodeOptimizer.optimize # This changes VM program already
-
-    # Save the bytecode to output.vovm to see how it's structured
     bytecode.save
-
-    # Run the virtual machine
     vm.run
-
-    # Dump the stack for debug purposes
-    # vm.dumpStack
+    #vm.dumpStack
 
 proc file(sourceFile: string) =
     var source: string

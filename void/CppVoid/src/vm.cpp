@@ -11,7 +11,7 @@
 #include "../include/compiler.hpp"
 
 #define PUSH(value) *vm.topStack = (value); vm.topStack++
-#define POP() --vm.topStack
+#define POP() (--vm.topStack)
 
 /* Helpers defined for the operations performed by the virtual machine */
 #define READ_INSTRUCTION() (*vm.pc++)
@@ -72,7 +72,7 @@
 #define DO_OP_STORE() { vm.topFrame->heap[READ_VARIABLE()] = *POP(); break; }
 
 /* Store to an accessed field: variable[index] = expression*/
-#define DO_OP_STORE_ACCESS() { (*vm.topFrame->heap[READ_VARIABLE()].lvalues)[POP()->nvalue] = *POP(); break; }
+#define DO_OP_STORE_ACCESS() { auto v = POP(); (*vm.topFrame->heap[READ_VARIABLE()].lvalues)[POP()->nvalue] = *v; break; }
 
 /* Load a value from a variable from the frame heap */
 #define DO_OP_LOAD() { PUSH((*vm.topFrame).heap[READ_VARIABLE()]); break; }
@@ -94,15 +94,9 @@
 
 static VM vm;
 
-static void resetStack()
-{
-    vm.topStack = vm.stack;
-}
+static void resetStack() { vm.topStack = vm.stack; }
 
-static void resetFrames()
-{
-    vm.topFrame = vm.frames;
-}
+static void resetFrames() { vm.topFrame = vm.frames; }
 
 void initVM()
 {

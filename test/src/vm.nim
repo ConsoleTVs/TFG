@@ -1,4 +1,4 @@
-import tables, values, instructions, frame
+import tables, values, instructions
 
 const
     vm_label_prefix* = "*"
@@ -35,12 +35,12 @@ proc dumpStack*(vm: VM) =
 
 proc tempLabel*(vm: VM): string = vm.temp_label_num.inc; vm_temp_label_prefix & $(vm.temp_label_num - 1)
 
-proc peek(vm: VM): Instruction = vm.program[vm.pc]
-proc advance(vm: VM): Instruction =  vm.pc.inc; return vm.peek
+# proc peek(vm: VM): Instruction = vm.program[vm.pc]
+proc advance(vm: VM): Instruction =  vm.pc.inc; return vm.program[vm.pc]
 
-proc jump(vm: VM, i: Instruction) = vm.pc = int(NumberValue(i.value).value)
-proc labelJump(vm: VM, i: Instruction) = vm.pc = vm.labels[StringValue(i.value).value]
-proc labelJump(vm: VM, i: StringValue) = vm.pc = vm.labels[i.value]
+proc jump(vm: VM, i: Instruction) = vm.pc = int(i.value.numberValue)
+proc labelJump(vm: VM, i: Instruction) = vm.pc = vm.labels[i.value.stringValue]
+proc labelJump(vm: VM, i: string) = vm.pc = vm.labels[i]
 
 # proc scope(vm: VM): Table[string, Value] = vm.heap[vm.heap.len - 1]
 # proc createScope(vm: VM) = vm.heap.add(vm.scope); vm.currentScope.inc
@@ -64,13 +64,15 @@ proc run*(vm: VM) =
     vm.findLabels
     while vm.pc < vm.program.len - 1:
         vm.pc.inc
-        case vm.peek.kind:
+        #echo vm.program[vm.pc].kind
+        case vm.program[vm.pc].kind:
             of HALTINST: return
             of NOPINST, LABELINST: discard # No Operation Instruction
             of PRINTINST: echo vm.pop
             of PUSHINST: vm.push(vm.advance.value)
             of VALUEINST: discard # Values are used with the advance() proc and not as an instruction.
             of POPINST: discard vm.pop # Kinda useless to pop without a reason tho...
+            #[
             of NEGINST: vm.push(negInst(vm.pop))
             of NOTINST: vm.push(notInst(vm.pop))
             of ORINST:
@@ -79,12 +81,14 @@ proc run*(vm: VM) =
             of ANDINST:
                 let a, b = vm.pop
                 vm.push(andInst(a, b))
+            ]#
             of ADDINST:
                 let a, b = vm.pop
                 vm.push(addInst(a, b))
             of SUBINST:
                 let a, b = vm.pop
                 vm.push(subInst(a, b))
+            #[
             of MULINST:
                 let a, b = vm.pop
                 vm.push(mulInst(a, b))
@@ -106,54 +110,53 @@ proc run*(vm: VM) =
             of GTEINST:
                 let a, b = vm.pop
                 vm.push(gteInst(a, b))
+            ]#
             of LTINST:
                 let a, b = vm.pop
                 vm.push(ltInst(a, b))
+            #[
             of LTEINST:
                 let a, b = vm.pop
                 vm.push(lteInst(a, b))
+            ]#
             of JUMPINST: vm.labelJump(vm.advance)
-            of AJUMPINST: vm.jump(vm.advance)
-            of FUNINST, STDFUNINST:
+            of RJUMPINST: vm.jump(vm.advance)
+            of FUNINST:
                 # vm.dumpStack
                 let
                     # Do not re-order theese!
                     arguments = vm.pop
                     endLabel = vm.pop
                     startLabel = vm.pop
-                    fun = funInst(startLabel, vm.frames[vm.frames.len - 1], int(NumberValue(arguments).value))
+                    fun = funInst(startLabel, vm.frames[vm.frames.len - 1], int(arguments.numberValue))
                 vm.frames[vm.frames.len - 1].heap["f"] = fun # Self reference to function
                 vm.frames.add(newFrame(vm.frames[vm.frames.len - 1].return_address, vm.frames[vm.frames.len - 1].heap))
-                if vm.peek.kind == FUNINST:
-                    vm.push(fun) # Push the function value to the stack
-                vm.labelJump(StringValue(endLabel))
+                vm.push(fun) # Push the function value to the stack
+                vm.labelJump(endLabel.stringValue)
                 # vm.dumpStack
             of CALLINST:
                 let
-                    arguments = int(NumberValue(vm.pop).value)
-                    fun = FunctionValue(vm.pop)
-                if arguments != fun.arguments:
-                    echo "The function requires " & $fun.arguments & " arguments. You provided " & $arguments & "."
+                    arguments = int(vm.pop.numberValue)
+                    fun = vm.pop
+                if arguments != fun.functionArguments:
+                    echo "The function requires " & $fun.functionArguments & " arguments. You provided " & $arguments & "."
                     quit()
-                vm.frames.add(newFrame(vm.pc, fun.frame.heap))
-                vm.pc = vm.labels[fun.label]
+                vm.frames.add(newFrame(vm.pc, fun.functionFrame.heap))
+                vm.pc = vm.labels[fun.functionLabel]
+            #[
             of BRANCHTINST:
                 let inst = vm.advance # Always consume the next instruction
                 if vm.pop.branchtInst:
                     vm.labelJump(inst)
+            ]#
             of BRANCHFINST:
                 let inst = vm.advance # Always consume the next instruction
                 if vm.pop.branchfInst:
                     vm.labelJump(inst)
-            of STOREINST:
-                let value = StringValue(vm.advance.value).value
-                if value == "f":
-                    echo "The 'f' variable name is reserved to function self-reference at the moment."
-                    quit()
-                vm.frames[vm.frames.len - 1].heap[value] = vm.pop
+            of STOREINST: vm.frames[vm.frames.len - 1].heap[vm.advance.value.stringValue] = vm.pop
             of LOADINST:
                 let
-                    key = StringValue(vm.advance.value).value
+                    key = vm.advance.value.stringValue
                     frame = vm.frames[vm.frames.len - 1]
                 if frame.heap.hasKey(key):
                     vm.push(frame.heap[key])
@@ -176,37 +179,16 @@ proc run*(vm: VM) =
             of LISTINST:
                 # We create a list value with N elements
                 var
+                    res: Value
                     values: seq[Value] = @[]
-                    num = NumberValue(vm.advance.value).value
+                    num = vm.advance.value.numberValue
                 while num > 0:
                     values.add(vm.pop)
                     num -= 1
-                vm.push(ListValue(values: values))
-            of ACCESSINST: vm.push(accessInst(vm.pop, vm.pop))
-            of LENINST: vm.push(lenInst(vm.pop))
-            of PUSHLISTINST: vm.push(pushListInst(vm.pop, vm.pop))
-            of STOREACCESSINST:
-                let
-                    # Do not reorder the pops!
-                    frame = vm.frames[vm.frames.len - 1]
-                    value = vm.pop
-                    index = vm.pop
-                    variable = StringValue(vm.advance.value).value
-                if not frame.heap.hasKey(variable):
-                    echo "Undefined variable " & variable
-                    quit()
-                if index of NumberValue and frame.heap[variable] of ListValue:
-                    # It's a list access
-                    var
-                        list = ListValue(frame.heap[variable])
-                        i = int(NumberValue(index).value)
-                    if i > list.values.len - 1 or i < 0:
-                        echo $i & " is out of index"
-                        quit()
-                    list.values[i] = value
-                else:
-                    echo "Unknown combination of variable and index"
-                    quit()
+                res.listValues = values
+                vm.push(res)
+            #of ACCESSINST: vm.push(accessInst(vm.pop, vm.pop))
+            #of LENINST: vm.push(lenInst(vm.pop))
             else:
-                echo "Unknown operation " & $vm.peek.kind
+                echo "Unknown operation " & $vm.program[vm.pc].kind
                 quit()
