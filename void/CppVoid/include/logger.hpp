@@ -14,6 +14,6 @@
 
 #define LOG_BUFFER 255
 
-void error(const char error[LOG_BUFFER], unsigned int line);
+void error(const std::string error, unsigned int line);
 
 #endif

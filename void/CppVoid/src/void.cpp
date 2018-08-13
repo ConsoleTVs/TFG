@@ -45,7 +45,7 @@ static void prompt()
 
 static void file(const char *file)
 {
-    // Load from fileW
+    // Load from file
 }
 
 int main(int argc, char *argv[])

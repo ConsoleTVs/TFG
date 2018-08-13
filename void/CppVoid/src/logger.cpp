@@ -9,8 +9,8 @@
 
 #include "../include/logger.hpp"
 
-void error(const char error[LOG_BUFFER], unsigned int line)
+void error(const std::string error, unsigned int line)
 {
-    printf("%s [Line %u]\n", error, line);
+    printf("%s [Line %u]\n", error.c_str(), line);
     exit(1);
 }

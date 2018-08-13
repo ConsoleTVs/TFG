@@ -1,6 +1,6 @@
 /**
  * |-------------------------------|
- * | Void Bytecode Pperation Codes |
+ * | Void Bytecode Operation Codes |
  * |-------------------------------|
  *
  * Copyright 2018 Erik Campobadal <soc@erik.cat>
@@ -8,6 +8,7 @@
  */
 
 #include "../include/opcode.hpp"
+#include <algorithm>
 
 static double numberCast(Value *a)
 {
@@ -49,7 +50,7 @@ static std::string multiplyString(std::string a, double times)
 Value minusInst(Value *a)
 {
     if (a->kind == VALUE_STRING) {
-        reverse(a->svalue->begin(), a->svalue->end());
+        std::reverse(a->svalue->begin(), a->svalue->end());
         return createValue(*a->svalue);
     }
     return createValue(-numberCast(a));
