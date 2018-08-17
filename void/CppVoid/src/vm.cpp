@@ -150,9 +150,9 @@ void run()
 
 void interpret()
 {
-    vm.program = program;
-    vm.pc = &vm.program->code[0];
-    run();
+    // vm.program = program;
+    // vm.pc = &vm.program->code[0];
+    // run();
 }
 
 void interpret(const char *source)
@@ -160,5 +160,6 @@ void interpret(const char *source)
     compile(source);
     vm.program = program;
     vm.pc = &vm.program->code[0];
-    run();
+
+    // run();
 }

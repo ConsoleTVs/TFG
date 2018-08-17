@@ -19,6 +19,8 @@
 #define PEEK_ON(offset) (*(scanner->current + offset))
 // #define CHECK(c) (*(scanner->current + 1) == c)
 #define IS_DIGIT(character) (character >= '0' && character <= '9')
+#define IS_TEXT(character) (character >= 'a' && character <= 'z' || character >= 'A' && character <= 'Z')
+#define IS_ALPHA(character) (IS_TEXT(character) || IS_DIGIT(character))
 
 Scanner *scanner = new Scanner;
 
@@ -32,7 +34,7 @@ void initScanner(const char *source)
 static const std::string token_error()
 {
     char e[LOG_BUFFER];
-    sprintf(e, "Unexpected token %c", *scanner->start);
+    sprintf(e, "Unexpected token '%c'", *scanner->start);
     return std::string(e);
 }
 
@@ -88,7 +90,7 @@ std::vector<Token> scan()
             break;
         }
         switch (char c = NEXT()) {
-            case ' ': case '\r': case '\t': { NEXT(); }
+            case ' ': case '\r': case '\t': { break; }
             case '\n': { scanner->line++; ADD_TOKEN(TOKEN_NEW_LINE); break; }
             case '#': { while (PEEK() != '\n' && !IS_AT_END()) NEXT(); break; }
             case '(': { ADD_TOKEN(TOKEN_LEFT_PAREN); break; }

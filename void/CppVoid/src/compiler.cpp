@@ -10,11 +10,18 @@
 #include "../include/compiler.hpp"
 #include "../include/scanner.hpp"
 
+
 void compile(const char *source)
 {
     initScanner(source);
     auto tokens = scan();
-    printf("COMPILE DONE");
+    #ifdef DEBUG
+        debug_tokens(tokens);
+    #endif
+    // initParser(tokens);
+    // auto program = parse();
+    // program.compile();
+    printf("COMPILE DONE\n");
 }
 
 unsigned int Expression::compile()
