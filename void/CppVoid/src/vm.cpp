@@ -95,7 +95,6 @@
 static VM vm;
 
 static void resetStack() { vm.topStack = vm.stack; }
-
 static void resetFrames() { vm.topFrame = vm.frames; }
 
 void initVM()
@@ -112,7 +111,12 @@ void run()
 {
     for (uint8_t instruction;;) {
         #ifdef DEBUG
-            printf("Inst: %d - Offset: %d - Line: %u\n", instruction, (int)(vm.pc - &vm.program->code[0]), vm.program->lines[(int)(vm.pc - &vm.program->code[0])]);
+            printf(
+                "Inst: %d - Offset: %d - Line: %u\n",
+                instruction,
+                (int)(vm.pc - &vm.program->code[0]),
+                vm.program->lines[(int)(vm.pc - &vm.program->code[0])]
+            );
             printf("Stack: -> ");
             for (Value* slot = vm.stack; slot < vm.topStack; slot++) {
                 printf("[ "); printValue(*slot); printf(" ]");

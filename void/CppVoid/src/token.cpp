@@ -13,6 +13,7 @@ static std::vector<std::string> tokenNames = {
     "TOKEN_SLASH",
     "TOKEN_STAR",
     "TOKEN_RIGHT_ARROW",
+    "TOKEN_DOUBLE_RIGHT_ARROW",
     "TOKEN_LEFT_ARROW",
     "TOKEN_BANG",
     "TOKEN_BANG_EQUAL",

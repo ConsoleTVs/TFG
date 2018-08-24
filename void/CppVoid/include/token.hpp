@@ -26,6 +26,7 @@ typedef enum {
     TOKEN_SLASH, // /
     TOKEN_STAR, // *
     TOKEN_RIGHT_ARROW, // ->
+    TOKEN_DOUBLE_RIGHT_ARROW, // ->>
     TOKEN_LEFT_ARROW, // <-
     TOKEN_BANG, // !
     TOKEN_BANG_EQUAL, // !=
@@ -38,7 +39,7 @@ typedef enum {
     TOKEN_IDENTIFIER, // <identifier>
     TOKEN_STRING, // <string>
     TOKEN_NUMBER, // <number>
-    TOKEN, // or
+    TOKEN_OR, // or
     TOKEN_AND, // and
     TOKEN_CLASS, // class
     TOKEN_ELSE, // else
@@ -52,7 +53,6 @@ typedef enum {
     // TOKEN_RETURN, // Not really needed
     // TOKEN_SUPER,
     TOKEN_SELF, // self
-    // TOKEN_VAR,
     TOKEN_EOF // \0
 } TokenType;
 

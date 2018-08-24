@@ -10,7 +10,6 @@
 #include "../include/compiler.hpp"
 #include "../include/scanner.hpp"
 
-
 void compile(const char *source)
 {
     initScanner(source);

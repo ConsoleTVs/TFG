@@ -10,7 +10,7 @@
 #include "../include/logger.hpp"
 #include "../include/rang.hpp"
 
-void error(const std::string error, unsigned int line)
+void error(const std::string error, int line)
 {
     std::cout
         << rang::style::bold
@@ -19,10 +19,9 @@ void error(const std::string error, unsigned int line)
         << rang::fg::yellow
         << error
         << rang::style::reset
-        << rang::style::bold
-        << " [Line " << line << "]"
-        << rang::style::reset
-        << std::endl;
+        << rang::style::bold;
+    if (line >= 0) std::cout << " [Line " << line << "]";
+    std::cout << rang::style::reset << std::endl;
     exit(1);
 }
 
@@ -36,6 +35,6 @@ void info(const std::string error, int line)
         << error
         << rang::style::reset
         << rang::style::bold;
-    if (line < 0) std::cout << " [Line " << line << "]";
+    if (line >= 0) std::cout << " [Line " << line << "]";
     std::cout << rang::style::reset << std::endl;
 }

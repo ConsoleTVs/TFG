@@ -12,9 +12,7 @@
 
 #include <string>
 
-#define LOG_BUFFER 255
-
-void error(const std::string error, unsigned int line);
+void error(const std::string error, int line = -1);
 void info(const std::string error, int line = -1);
 
 #endif

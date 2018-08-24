@@ -1,17 +1,17 @@
 number = 0
 
-if <- (number > 10) {
+if (number > 10) {
     print -> (number + " is lower than 10")
 }
 
-while <- (number > 20) ->> inc -> (number)
-while <- (number > 30) {
-    inc -> (number)
+while (number > 20) ->> number = number + 1
+while (number > 30) {
+    number = number + 1
 }
 
 add = (a, b) -> a + b
 add2 = (a, b) {
-    return a + b
+    -> a + b
 }
 
 print -> (add -> (1, 1))
