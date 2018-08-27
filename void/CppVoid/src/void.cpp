@@ -38,7 +38,10 @@ static void prompt()
     for (;;) {
         printf("-> ");
         std::getline(std::cin, input);
-        if (input == ".exit") exit(0);
+        if (input == ".exit" || std::cin.fail() || std::cin.eof()) {
+            std::cin.clear();
+            exit(1);
+        }
         interpret(input.c_str());
     }
 }

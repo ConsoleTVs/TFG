@@ -12,7 +12,7 @@
 #include <string.h>
 #include <unordered_map>
 
-#define ADD_TOKEN(token) printf("Add...\n"); (tokens.push_back(makeToken(token)))
+#define ADD_TOKEN(token) (tokens.push_back(makeToken(token)))
 #define TOK_LENGTH() ((int) (scanner->current - scanner->start))
 #define IS_AT_END() (*scanner->current == '\0')
 #define NEXT() (*(scanner->current++))
@@ -23,7 +23,7 @@
 #define IS_ALPHA(character) (character >= 'a' && character <= 'z' || character >= 'A' && character <= 'Z' || character == '_')
 #define IS_ALPHANUM(character) (IS_ALPHA(character) || IS_DIGIT(character))
 
-Scanner *scanner = new Scanner;
+static Scanner *scanner = new Scanner;
 
 static const std::unordered_map<std::string, TokenType> reservedWords = {
     { "true", TOKEN_TRUE },
@@ -80,8 +80,8 @@ static TokenType is_string()
     }
 
     if (IS_AT_END()) error("Unterminated string literal", scanner->line);
+    NEXT(); // The " itelf
 
-    NEXT();
     return TOKEN_STRING;
 }
 
@@ -154,7 +154,16 @@ std::vector<Token> scan()
                 error(token_error(), scanner->line);
             }
         }
-        printf("Next\n");
     }
     return tokens;
 }
+
+#undef ADD_TOKEN
+#undef TOK_LENGTH
+#undef IS_AT_END
+#undef NEXT
+#undef PEEK
+#undef PEEK_ON
+#undef IS_DIGIT
+#undef IS_ALPHA
+#undef IS_ALPHANUM

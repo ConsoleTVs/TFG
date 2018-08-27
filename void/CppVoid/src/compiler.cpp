@@ -9,6 +9,8 @@
 
 #include "../include/compiler.hpp"
 #include "../include/scanner.hpp"
+#include "../include/parser.hpp"
+#include "../include/logger.hpp"
 
 void compile(const char *source)
 {
@@ -17,10 +19,12 @@ void compile(const char *source)
     #ifdef DEBUG
         debug_tokens(tokens);
     #endif
-    // initParser(tokens);
-    // auto program = parse();
-    // program.compile();
-    printf("COMPILE DONE\n");
+    initParser(tokens);
+    auto program = parse();
+    for (auto node : program) {
+        node.compile();
+    }
+    info("COMPILATION COMPLETED\n");
 }
 
 unsigned int Expression::compile()
