@@ -8,7 +8,58 @@
  */
 
 #include "../include/opcode.hpp"
+#include "../include/logger.hpp"
 #include <algorithm>
+
+static std::string OpCodeNames[155] = {
+    "OP_CONSTANT",
+
+    // Unary operations
+    "OP_MINUS",
+    "OP_NOT",
+
+    // Binary operations
+    "OP_ADD",
+    "OP_SUB",
+    "OP_MUL",
+    "OP_DIV",
+    "OP_EQ",
+    "OP_NEQ",
+    "OP_LT",
+    "OP_LTE",
+    "OP_HT",
+    "OP_HTE",
+
+    // Jumps and conditional jumps
+    "OP_RJUMP",
+    "OP_BRANCH_TRUE",
+    "OP_BRANCH_FALSE",
+
+    // Store and load
+    "OP_STORE",
+    "OP_LOAD",
+    "OP_STORE_ACCESS",
+
+    // Lists and dictionaries
+    "OP_LIST",
+    "OP_ACCESS",
+
+    // Others
+    "OP_LEN",
+    "OP_RETURN"
+};
+
+void debug_opcode(uint8_t opcode)
+{
+    printf("%s", OpCodeNames[opcode].c_str());
+}
+
+void debug_opcodes(std::vector<uint8_t> opcodes)
+{
+    for (auto opcode : opcodes) {
+        printf("%s\n", OpCodeNames[opcode].c_str());
+    }
+}
 
 static double numberCast(Value *a)
 {
@@ -79,7 +130,7 @@ Value mulInst(Value *a, Value *b)
 Value divInst(Value *a, Value *b)
 {
     double bn = numberCast(b);
-    if (bn == 0) { printf("Division by zero."); exit(0); }
+    if (bn == 0) error("Division by zero.");
     return createValue(numberCast(a) / bn);
 }
 

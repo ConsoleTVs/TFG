@@ -14,5 +14,7 @@
 
 void error(const std::string error, int line = -1);
 void info(const std::string error, int line = -1);
+void success(const std::string error, int line = -1);
+void warning(const std::string error, int line = -1);
 
 #endif

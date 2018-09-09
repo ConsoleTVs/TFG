@@ -35,21 +35,21 @@ static std::vector<std::string> tokenNames = {
     "TOKEN_WHILE",
     "TOKEN_FOR",
     "TOKEN_IF",
-    "TOKEN_NIL",
+    "TOKEN_NONE",
     "TOKEN_SELF",
-    "TOKEN_EOF"
+    "TOKEN_EOF",
+    "TOKEN_PERCENT",
+    "TOKEN_LEFT_SQUARE",
+    "TOKEN_RIGHT_SQUARE"
 };
 
-static inline void debug_tokens_header()
+void debug_token(Token token)
 {
-    printf("\n----------------\n");
-    printf("| TOKENS FOUND |\n");
-    printf("----------------\n\n");
+    printf("%s\n", tokenNames[token.type].c_str());
 }
 
 void debug_tokens(std::vector<Token> tokens)
 {
-    debug_tokens_header();
     for (auto token : tokens) {
         printf("%s ", tokenNames[token.type].c_str());
         if (token.type == TOKEN_NEW_LINE) {
@@ -61,7 +61,6 @@ void debug_tokens(std::vector<Token> tokens)
 
 void debug_tokens(std::vector<TokenType> tokens)
 {
-    debug_tokens_header();
     for (auto token : tokens) {
         printf("%s ", tokenNames[token].c_str());
         if (token == TOKEN_NEW_LINE) {

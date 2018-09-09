@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-typedef enum {
+typedef enum : uint8_t {
     VALUE_NUMBER,
     VALUE_BOOLEAN,
     VALUE_STRING,

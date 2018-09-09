@@ -9,6 +9,7 @@
 
 #include "../include/vm.hpp"
 #include "../include/compiler.hpp"
+#include "../include/logger.hpp"
 
 #define PUSH(value) *vm.topStack = (value); vm.topStack++
 #define POP() (--vm.topStack)
@@ -110,6 +111,7 @@ void initVM()
 void run()
 {
     for (uint8_t instruction;;) {
+        instruction = READ_INSTRUCTION();
         #ifdef DEBUG
             printf(
                 "Inst: %d - Offset: %d - Line: %u\n",
@@ -123,7 +125,7 @@ void run()
             }
             printf(" <- \n");
         #endif
-        switch (instruction = READ_INSTRUCTION()) {
+        switch (instruction) {
             case OP_CONSTANT: DO_OP_CONSTANT()
             case OP_MINUS: DO_OP_MINUS()
             case OP_NOT: DO_OP_NOT()
@@ -154,16 +156,21 @@ void run()
 
 void interpret()
 {
-    // vm.program = program;
-    // vm.pc = &vm.program->code[0];
-    // run();
+    vm.program = program;
+    vm.pc = &vm.program->code[0];
+    run();
 }
 
 void interpret(const char *source)
 {
     compile(source);
+
+    info("Started interpreting...");
+
     vm.program = program;
     vm.pc = &vm.program->code[0];
 
-    // run();
+    run();
+
+    success("Finished interpreting");
 }

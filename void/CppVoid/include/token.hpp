@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-typedef enum {
+typedef enum : uint8_t {
     TOKEN_NEW_LINE, // \n
     TOKEN_LEFT_PAREN, // (
     TOKEN_RIGHT_PAREN, // )
@@ -49,11 +49,14 @@ typedef enum {
     TOKEN_WHILE, // while
     TOKEN_FOR, // for
     TOKEN_IF, // if
-    TOKEN_NIL, // nil
+    TOKEN_NONE, // none
     // TOKEN_RETURN, // Not really needed
     // TOKEN_SUPER,
     TOKEN_SELF, // self
-    TOKEN_EOF // \0
+    TOKEN_EOF, // \0
+    TOKEN_PERCENT, // %
+    TOKEN_LEFT_SQUARE, // [
+    TOKEN_RIGHT_SQUARE // ]
 } TokenType;
 
 typedef struct {
@@ -63,6 +66,7 @@ typedef struct {
     unsigned int line;
 } Token;
 
+void debug_token(Token token);
 void debug_tokens(std::vector<Token> tokens);
 void debug_tokens(std::vector<TokenType> tokens);
 

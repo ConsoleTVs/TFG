@@ -134,15 +134,12 @@ proc primary(parser: Parser): Expression =
                 break
             discard parser.consume(TOK_COMMA, "Expected ',' after list element on line " & $parser.peek.line)
         return List(values: values)
-    if parser.match(TOK_NONE):
-        return None()
     if parser.match(TOK_LEFT_PAREN):
         if parser.isFunction:
             return parser.function
-        else:
-            var expression = parser.expression
-            discard parser.consume(TOK_RIGHT_PAREN, "Expected ')' after the expression")
-            return Group(expression: expression)
+        var expression = parser.expression
+        discard parser.consume(TOK_RIGHT_PAREN, "Expected ')' after the expression")
+        return Group(expression: expression)
     echo "Expected an expression. Failed with the lexeme " & parser.peek.lexeme & " at line " & $parser.peek.line
     quit()
 
@@ -151,7 +148,7 @@ proc finishCall(parser: Parser, callee: Expression): Expression =
     if not parser.check(TOK_RIGHT_PAREN):
         arguments.add(parser.expression)
         if arguments.len >= 32:
-            echo $parser.peek, "Cannot have more than 32 acall rguments."
+            echo $parser.peek, "Cannot have more than 32 call arguments."
             quit()
         while parser.match(TOK_COMMA):
             arguments.add(parser.expression)

@@ -42,7 +42,22 @@ static void prompt()
             std::cin.clear();
             exit(1);
         }
+
+        printf("\n ");
+        for (unsigned int k = 0; k < input.length() + 4; k++) {
+            printf("=");
+        }
+        printf("\n");
+        printf(" | %s |\n ", input.c_str());
+        for (unsigned int k = 0; k < input.length() + 4; k++) {
+            printf("=");
+        }
+        printf("\n");
+        printf("\n");
+
+        input += '\n';
         interpret(input.c_str());
+        resetProgram();
     }
 }
 
@@ -53,8 +68,10 @@ static void file(const char *file)
 
 int main(int argc, char *argv[])
 {
+    initVM();
     prompt();
-    /*
+
+    /*z
     // a = 0
     addOpCode(OP_CONSTANT, 1);
     addOpCode(addConstant(createValue(0.0)), 2);
@@ -101,8 +118,8 @@ int main(int argc, char *argv[])
     // Return the result
     addOpCode(OP_RETURN, 37);
     */
+
     // initVM();
     // interpret(program);
-    // interpret();
-    //freeVM();
+    //interpret();
 }

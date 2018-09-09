@@ -20,9 +20,6 @@ typedef struct {
     unsigned int line;
 } Scanner;
 
-extern Scanner *scanner;
-
-void initScanner(const char *source);
-std::vector<Token> scan();
+std::vector<Token> *scan(const char *source);
 
 #endif

@@ -11,141 +11,211 @@
 #define compiler_hpp
 
 #include "program.hpp"
+#include "token.hpp"
 #include <string>
 #include <vector>
 
-void compile(const char *source);
+typedef enum {
+    RULE_EXPRESSION,
+    RULE_STATEMENT,
+    RULE_EXPRESSION_STATEMENT,
+    RULE_NUMBER,
+    RULE_STRING,
+    RULE_BOOLEAN,
+    RULE_LIST,
+    RULE_NONE,
+    RULE_GROUP,
+    RULE_UNARY,
+    RULE_BINARY,
+    RULE_VARIABLE,
+    RULE_ASSIGN,
+    RULE_ASSIGN_ACCESS,
+    RULE_LOGICAL,
+    RULE_CALL,
+    RULE_ACCESS,
+} Rule;
 
-class Expression {
+class Expression
+{
     public:
         unsigned int line;
+        Rule type;
 
+        Expression(Rule type = RULE_EXPRESSION) : type(type) {};
         unsigned int virtual compile();
 };
 
-class Statement {
+class Statement
+{
     public:
         unsigned int line;
+        Rule type;
 
+        Statement(Rule type = RULE_STATEMENT)
+            : type(type) {};
         unsigned int virtual compile();
 };
 
-class Number : Expression
-{
-    public:
-        double value;
-
-        unsigned int compile();
-};
-
-class String : Expression
-{
-    public:
-        std::string value;
-
-        unsigned int compile();
-};
-
-class Boolean : Expression
-{
-    public:
-        bool value;
-
-        unsigned int compile();
-};
-
-class List : Expression
-{
-    public:
-        std::vector<Expression *> value;
-
-        unsigned int compile();
-};
-
-class None : Expression {
-    public:
-        unsigned int compile();
-};
-
-class Group : Expression
+class ExpressionStatement : public Statement
 {
     public:
         Expression *expression;
 
-        unsigned int compile();
+        ExpressionStatement(Expression *expression)
+            : Statement(RULE_EXPRESSION_STATEMENT), expression(expression) {}
+        unsigned int compile() override;
 };
 
-class Unary : Expression
+class Number : public Expression
 {
     public:
-        std::string op; //! This should be changed to a TOKEN type
+        double value;
+
+        Number(double value)
+            : Expression(RULE_NUMBER), value(value) {};
+        unsigned int compile() override;
+};
+
+class String : public Expression
+{
+    public:
+        std::string value;
+
+        String(std::string value)
+            : Expression(RULE_STRING), value(value) {};
+        unsigned int compile() override;
+};
+
+class Boolean : public Expression
+{
+    public:
+        bool value;
+
+        Boolean(bool value)
+            : Expression(RULE_BOOLEAN), value(value) {};
+        unsigned int compile() override;
+};
+
+class List : public Expression
+{
+    public:
+        std::vector<Expression *> value;
+
+        List(std::vector<Expression *> value)
+            : Expression(RULE_LIST), value(value) {};
+        unsigned int compile() override;
+};
+
+class None : public Expression
+{
+    public:
+        None()
+            : Expression(RULE_NONE) {};
+        unsigned int compile() override;
+};
+
+class Group : public Expression
+{
+    public:
+        Expression *expression;
+
+        Group(Expression *value)
+            : Expression(RULE_GROUP), expression(value) {};
+        unsigned int compile() override;
+};
+
+class Unary : public Expression
+{
+    public:
+        Token op; //! This should be changed to a TOKEN type
         Expression *right;
 
-        unsigned int compile();
+        Unary(Token op, Expression *right)
+            : Expression(RULE_UNARY), op(op), right(right) {};
+        unsigned int compile() override;
 };
 
-class Binary : Expression
+class Binary : public Expression
 {
     public:
-        std::string op;
         Expression* left;
+        Token op;
         Expression* right;
 
-        unsigned int compile();
+        Binary(Expression *left, Token op, Expression *right)
+            : Expression(RULE_BINARY), left(left), op(op), right(right) {};
+        unsigned int compile() override;
 };
 
-class Variable : Expression
+class Variable : public Expression
 {
     public:
         std::string name;
 
-        unsigned int compile();
+        Variable(std::string name)
+            : Expression(RULE_VARIABLE), name(name) {};
+        unsigned int compile() override;
 };
 
-class Assign : Expression
+class Assign : public Expression
 {
     public:
         std::string name;
+        Expression *value;
 
-        unsigned int compile();
+        Assign(std::string name, Expression *value)
+            : Expression(RULE_ASSIGN), name(name), value(value) {};
+        unsigned int compile() override;
 };
 
-class AssignAccess : Expression
+class AssignAccess : public Expression
 {
     public:
         std::string name;
         Expression *index;
         Expression *value;
 
-        unsigned int compile();
+        AssignAccess(std::string name, Expression *index, Expression *value)
+            : Expression(RULE_ASSIGN_ACCESS), name(name), index(index), value(value) {};
+        unsigned int compile() override;
 };
 
-class Logical : Expression
+class Logical : public Expression
 {
     public:
-        std::string op;
-        Expression *index;
-        Expression *value;
+        Expression *left;
+        Token op;
+        Expression *right;
 
-        unsigned int compile();
+        Logical(Expression *left, Token op, Expression *right)
+            : Expression(RULE_LOGICAL), left(left),  op(op), right(right) {};
+        unsigned int compile() override;
 };
 
-class Call : Expression
+class Call : public Expression
 {
     public:
         Expression *callee;
-        std::vector<Expression *> *arguments;
+        std::vector<Expression *> arguments;
 
-        unsigned int compile();
+        Call(Expression *callee, std::vector<Expression *> arguments)
+            : Expression(RULE_CALL), callee(callee), arguments(arguments) {};
+        unsigned int compile() override;
 };
 
-class Access : Expression
+class Access : public Expression
 {
     public:
-        std::string *name;
+        std::string name;
         Expression *index;
 
-        unsigned int compile();
+        Access(std::string name, Expression *index)
+            : Expression(RULE_ACCESS), name(name), index(index) {};
+        unsigned int compile() override;
 };
+
+void compile(const char *source);
+void debug_rules(std::vector<Rule> rules);
+void debug_rules(std::vector<Statement *> rules);
 
 #endif

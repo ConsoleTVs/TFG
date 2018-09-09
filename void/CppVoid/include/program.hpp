@@ -22,6 +22,8 @@ typedef struct {
 
 extern Program *program;
 
+void debug_program();
+void resetProgram();
 void addOpCode(uint8_t opcode, const unsigned int line);
 int addConstant(Value value);
 

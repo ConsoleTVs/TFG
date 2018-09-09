@@ -12,7 +12,7 @@
 
 #include "value.hpp"
 
-typedef enum {
+typedef enum : uint8_t {
     OP_CONSTANT,
 
     // Unary operations
@@ -50,6 +50,8 @@ typedef enum {
     OP_RETURN
 } OpCode;
 
+void debug_opcode(uint8_t opcode);
+void debug_opcodes(std::vector<uint8_t> opcodes);
 bool isTrue(Value *a);
 Value minusInst(Value *a);
 Value notInst(Value *a);

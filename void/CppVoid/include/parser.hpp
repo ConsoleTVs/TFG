@@ -15,11 +15,10 @@
 #include <vector>
 
 typedef struct {
-    std::vector<Token> tokens;
     Token *current;
 } Parser;
 
 void initParser(std::vector<Token> tokens);
-std::vector<Statement> parse();
+std::vector<Statement *> *parse(const char *source);
 
 #endif
