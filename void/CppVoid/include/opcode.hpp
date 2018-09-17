@@ -47,7 +47,7 @@ typedef enum : uint8_t {
 
     // Others
     OP_LEN,
-    OP_RETURN
+    OP_EXIT
 } OpCode;
 
 void debug_opcode(uint8_t opcode);

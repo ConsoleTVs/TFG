@@ -62,7 +62,7 @@ static Token makeToken(TokenType type)
         token.length = TOK_LENGTH();
     }
 
-    scanner->start = scanner->current + 1;
+    scanner->start = *scanner->current == ' ' ? scanner->current + 1 : scanner->current;
 
     return token;
 }

@@ -87,8 +87,8 @@
 /* pushes the value length of the top of the stack */
 #define DO_OP_LEN() { PUSH(lenInst(POP())); break; }
 
-/* Return */
-#define DO_OP_RETURN() { printValue(*POP()); printf("\n"); return; }
+/* Exit and dump */
+#define DO_OP_EXIT() { for(auto i = vm.stack; i < vm.topStack; i++) { printValue(*i); printf("\n"); }; return; }
 
 /* Unknown OP code found */
 #define DO_OP_UNKNOWN() { printf("Unknown instruction at line %u\n", vm.program->lines[(int) (vm.pc - &vm.program->code[0])]); break; }
@@ -148,7 +148,7 @@ void run()
             case OP_LIST: DO_OP_LIST()
             case OP_ACCESS: DO_OP_ACCESS()
             case OP_LEN: DO_OP_LEN()
-            case OP_RETURN: DO_OP_RETURN()
+            case OP_EXIT: DO_OP_EXIT()
             default: DO_OP_UNKNOWN()
         }
     }

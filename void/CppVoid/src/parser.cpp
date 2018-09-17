@@ -42,7 +42,9 @@ static Token consume(TokenType type, const char* message) {
 static bool match(TokenType token)
 {
     if (CHECK(token)) {
-        NEXT();
+        if (token != TOKEN_EOF) {
+            NEXT();
+        }
         return true;
     }
 
@@ -53,7 +55,9 @@ static bool matchMany(std::vector<TokenType> tokens)
 {
     for (auto token : tokens) {
         if (CHECK(token)) {
-            NEXT();
+            if (token != TOKEN_EOF) {
+                NEXT();
+            }
             return true;
         }
     }
@@ -63,10 +67,14 @@ static bool matchMany(std::vector<TokenType> tokens)
 
 std::string toString(Token token)
 {
+    printf("Trying to convert to string the token (Length: %d): ", token.length);
+    debug_token(token);
     std::string s;
     for (unsigned int i = 0; i < token.length; i++) {
         s += *(token.start + i);
+        printf("Current: %s\n", s.c_str());
     }
+    printf("Finished: %s\n", s.c_str());
 
     return s;
 }
@@ -85,6 +93,7 @@ static Expression *function()
 
 static Expression *primary()
 {
+    debug_token(CURRENT());
     if (match(TOKEN_FALSE)) return new Boolean(false);
     if (match(TOKEN_TRUE)) return new Boolean(true);
     if (match(TOKEN_NONE)) return new None();
@@ -156,12 +165,13 @@ static Expression *call()
             break;
         }
     }
+
     return result;
 }
 
 static Expression *unary()
 {
-    if (matchMany(std::vector<TokenType>(TOKEN_BANG, TOKEN_MINUS))) {
+    if (matchMany(std::vector<TokenType>({ TOKEN_BANG, TOKEN_MINUS }))) {
         auto op = PREVIOUS();
         return new Unary(op, unary());
     }
@@ -172,7 +182,7 @@ static Expression *unary()
 static Expression *mulDivMod()
 {
     auto result = unary();
-    while (matchMany(std::vector<TokenType>({TOKEN_SLASH, TOKEN_STAR, TOKEN_PERCENT}))) {
+    while (matchMany(std::vector<TokenType>({ TOKEN_SLASH, TOKEN_STAR, TOKEN_PERCENT }))) {
         auto op = PREVIOUS();
         result = new Binary(result, op, unary());
     }
@@ -183,7 +193,7 @@ static Expression *mulDivMod()
 static Expression *addition()
 {
     auto result = mulDivMod();
-    while (matchMany(std::vector<TokenType>({TOKEN_MINUS, TOKEN_PLUS}))) {
+    while (matchMany(std::vector<TokenType>({ TOKEN_MINUS, TOKEN_PLUS }))) {
         auto op = PREVIOUS();
         result = new Binary(result, op, mulDivMod());
     }
@@ -194,7 +204,7 @@ static Expression *addition()
 static Expression *comparison()
 {
     auto result = addition();
-    while (matchMany(std::vector<TokenType>({TOKEN_HIGHER, TOKEN_HIGHER_EQUAL, TOKEN_LOWER, TOKEN_LOWER_EQUAL}))) {
+    while (matchMany(std::vector<TokenType>({ TOKEN_HIGHER, TOKEN_HIGHER_EQUAL, TOKEN_LOWER, TOKEN_LOWER_EQUAL }))) {
         auto op = PREVIOUS();
         result = new Binary(result, op, addition());
     }
@@ -205,7 +215,7 @@ static Expression *comparison()
 static Expression *equality()
 {
     auto result = comparison();
-    while (matchMany(std::vector<TokenType>({TOKEN_BANG_EQUAL, TOKEN_EQUAL_EQUAL}))) {
+    while (matchMany(std::vector<TokenType>({ TOKEN_BANG_EQUAL, TOKEN_EQUAL_EQUAL }))) {
         auto op = PREVIOUS();
         result = new Binary(result, op, comparison());
     }
@@ -259,7 +269,13 @@ static Expression *expression()
 static Statement *expressionStatement()
 {
     auto expr = expression();
-    consume(TOKEN_NEW_LINE, "Expected a new line after expression statement");
+    printf("BEFORE: ");
+    debug_token(CURRENT());
+    if (!matchMany(std::vector<TokenType>({ TOKEN_NEW_LINE, TOKEN_EOF }))) {
+        error("Expected a new line or EOF after expression statement");
+    }
+    printf("AFTER: ");
+    debug_token(CURRENT());
     return new ExpressionStatement(expr);
 }
 
@@ -279,6 +295,8 @@ std::vector<Statement *> *parse(const char *source)
     auto code = new std::vector<Statement *>;
 
     while (!IS_AT_END()) {
+        printf("Looking for statement... Starting at ");
+        debug_token(CURRENT());
         code->push_back(statement());
     }
 
@@ -289,6 +307,9 @@ std::vector<Statement *> *parse(const char *source)
     return code;
 }
 
+#undef CURRENT
+#undef PREVIOUS
+#undef CHECK
 #undef NEXT
 #undef IS_AT_END
 #undef LOOKAHEAD

@@ -43,7 +43,7 @@ void compile(const char *source)
         node->compile();
     }
 
-    addOpCode(OP_RETURN, 0);
+    addOpCode(OP_EXIT, 0);
 
     debug_program();
 
