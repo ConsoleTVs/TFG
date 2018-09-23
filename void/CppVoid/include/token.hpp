@@ -68,6 +68,7 @@ typedef struct {
 } Token;
 
 void debug_token(Token token);
+void debug_token(TokenType token);
 void debug_tokens(std::vector<Token> tokens);
 void debug_tokens(std::vector<TokenType> tokens);
 

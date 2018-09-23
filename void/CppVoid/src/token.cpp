@@ -49,6 +49,11 @@ void debug_token(Token token)
     printf("%s\n", tokenNames[token.type].c_str());
 }
 
+void debug_token(TokenType token)
+{
+    printf("%s\n", tokenNames[token].c_str());
+}
+
 void debug_tokens(std::vector<Token> tokens)
 {
     for (auto token : tokens) {

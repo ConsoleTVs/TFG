@@ -280,34 +280,52 @@ static Statement *expressionStatement()
     return new ExpressionStatement(expr);
 }
 
+static std::vector<Statement *> getBockBody()
+{
+    std::vector<Statement *> body;
+    while (!CHECK(TOKEN_RIGHT_BRACE) && !IS_AT_END()) {
+        body.push_back(statement());
+    }
+    return body;
+}
+
 static Statement *ifStatement()
 {
     consume(TOKEN_LEFT_PAREN, "Expected a '(' after 'if'");
-    Expression *condition = expression();
+    auto condition = expression();
     consume(TOKEN_RIGHT_PAREN, "Expected a ')' after 'if' condition");
-    if (match(TOKEN_RIGHT_ARROW)) {
-        // It's a simple if statement that returns the element
-        // return
-    } else if (match(TOKEN_BIG_RIGHT_ARROW)) {
-        consume(TOKEN_LEFT_BRACE, "Expected a '{' after the '=>'");
-        consume(TOKEN_NEW_LINE, "Expected a new line after the '{'");
-        std::vector<Statement *> thenBranch;
-        while (!CHECK(TOKEN_RIGHT_BRACE) && !IS_AT_END()) {
-            thenBranch.push_back(statement());
-        }
-        consume(TOKEN_RIGHT_BRACE, "Unterminated block. Expected '}'");
-        if (!matchAny(std::vector<TokenType>({ TOKEN_NEW_LINE, TOKEN_EOF }))) {
-            error("Expected a new line after the '}'", parser->current->line);
-        }
-
-        return new If(condition, thenBranch, std::vector<Statement *>({}));
+    consume(TOKEN_LEFT_BRACE, "Expected a '{' after the ')'");
+    consume(TOKEN_NEW_LINE, "Expected a new line after the '{'");
+    auto thenBranch = getBockBody();
+    consume(TOKEN_RIGHT_BRACE, "Unterminated block. Expected '}'");
+    if (!matchAny(std::vector<TokenType>({ TOKEN_NEW_LINE, TOKEN_EOF }))) {
+        error("Expected a new line after the '}'", parser->current->line);
     }
+
+    return new If(condition, thenBranch, std::vector<Statement *>({}));
+}
+
+static Statement *whileStatement()
+{
+    consume(TOKEN_LEFT_PAREN, "Expected '(' after 'while'");
+    auto condition = expression();
+    consume(TOKEN_RIGHT_PAREN, "Expected ')' after 'while' condition");
+    consume(TOKEN_LEFT_BRACE, "Expected a '{' after the ')'");
+    consume(TOKEN_NEW_LINE, "Expected a new line after the '{'");
+    auto body = getBockBody();
+    consume(TOKEN_RIGHT_BRACE, "Unterminated block. Expected '}'");
+    if (!matchAny(std::vector<TokenType>({ TOKEN_NEW_LINE, TOKEN_EOF }))) {
+        error("Expected a new line after the '}'", parser->current->line);
+    }
+    return new While(condition, body);
 }
 
 static Statement *statement()
 {
     if (match(TOKEN_IF)) {
         return ifStatement();
+    } else if (match(TOKEN_WHILE)) {
+        return whileStatement();
     }
     return expressionStatement();
 }

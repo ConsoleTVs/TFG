@@ -75,7 +75,7 @@ static bool match(const char c)
     return true;
 }
 
-static TokenType is_string()
+static TokenType isString()
 {
     while (PEEK() != '"' && !IS_AT_END()) {
         if (PEEK() == '\n') scanner->line++;
@@ -133,7 +133,8 @@ std::vector<Token> *scan(const char *source)
 
     while (!IS_AT_END()) {
         switch (char c = NEXT()) {
-            case ' ': case '\r': case '\t': { break; }
+            case ' ': { scanner->start = scanner->current; break; }
+            case '\r': case '\t': { break; }
             case '\n': { scanner->line++; ADD_TOKEN(TOKEN_NEW_LINE); break; }
             case '#': { while (PEEK() != '\n' && !IS_AT_END()) NEXT(); break; }
             case '(': { ADD_TOKEN(TOKEN_LEFT_PAREN); break; }
@@ -164,7 +165,7 @@ std::vector<Token> *scan(const char *source)
                 else if (match('>')) { ADD_TOKEN(TOKEN_BIG_RIGHT_ARROW); break; }
                 else { ADD_TOKEN(TOKEN_EQUAL); break; }
             }
-            case '"': { ADD_TOKEN(is_string()); break; }
+            case '"': { ADD_TOKEN(isString()); break; }
             case '<': {
                 if (match('-')) { ADD_TOKEN(TOKEN_LEFT_ARROW); break; }
                 ADD_TOKEN(match('=') ? TOKEN_LOWER_EQUAL : TOKEN_LOWER); break;

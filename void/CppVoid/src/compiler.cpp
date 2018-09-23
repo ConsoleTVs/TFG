@@ -32,6 +32,7 @@ static std::vector<std::string> RuleNames = {
     "RULE_CALL",
     "RULE_ACCESS",
     "RULE_IF",
+    "RULE_WHILE",
 };
 
 void compile(const char *source)
@@ -130,7 +131,7 @@ unsigned int Group::compile()
     return this->expression->compile();
 }
 
-static unsigned int compileOperator(Token op, unsigned int line) //! THIS NEEDS TO BE WRITTEN!!
+static unsigned int compileOperator(Token op, unsigned int line)
 {
     switch (op.type) {
         case TOKEN_PLUS: { addOpCode(OP_ADD, line); break; }
@@ -202,7 +203,7 @@ unsigned int Access::compile()
     return 0;
 }
 
-unsigned int If::compile()
+unsigned int If::compile() //! Still needs to finish what happens if the else branch is present!!
 {
     unsigned int instructions = 0;
 
@@ -222,4 +223,25 @@ unsigned int If::compile()
     }
 
     return instructions;
+}
+
+unsigned int While::compile()
+{
+    int instructions = 0;
+    instructions = this->condition->compile() + 4; // +4 of the OP_BRANCH_FALSE and CONSTANT + Rjump and constant
+
+    addOpCode(OP_BRANCH_FALSE, this->line);
+    int constantIndex = addConstant(createValue(0.0)), afterCondition = 0;
+    addOpCode(constantIndex, this->line);
+
+    for (auto stmt : this->body) {
+        afterCondition += stmt->compile();
+    }
+
+    addOpCode(OP_RJUMP, this->line);
+    addOpCode(addConstant(createValue((double) -(instructions + afterCondition - 1))), this->line);
+
+    modifyConstant(constantIndex, createValue((double) (afterCondition + 3)));
+
+    return instructions + afterCondition;
 }

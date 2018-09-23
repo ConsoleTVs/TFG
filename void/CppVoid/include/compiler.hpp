@@ -34,6 +34,7 @@ typedef enum {
     RULE_CALL,
     RULE_ACCESS,
     RULE_IF,
+    RULE_WHILE,
 } Rule;
 
 class Expression
@@ -226,6 +227,17 @@ class If : public Statement
         If(Expression *condition, std::vector<Statement *> thenBranch, std::vector<Statement *> elseBranch)
             : Statement(RULE_IF), condition(condition), thenBranch(thenBranch), elseBranch(elseBranch) {};
         unsigned int compile() override;
+};
+
+class While : public Statement
+{
+    public:
+        Expression *condition;
+        std::vector<Statement *> body;
+
+    While(Expression *condition, std::vector<Statement *> body)
+        : Statement(RULE_WHILE), condition(condition), body(body) {};
+    unsigned int compile() override;
 };
 
 void compile(const char *source);
