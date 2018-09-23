@@ -33,6 +33,7 @@ typedef enum {
     RULE_LOGICAL,
     RULE_CALL,
     RULE_ACCESS,
+    RULE_IF,
 } Rule;
 
 class Expression
@@ -211,6 +212,19 @@ class Access : public Expression
 
         Access(std::string name, Expression *index)
             : Expression(RULE_ACCESS), name(name), index(index) {};
+        unsigned int compile() override;
+};
+
+/* Statements */
+class If : public Statement
+{
+    public:
+        Expression *condition;
+        std::vector<Statement *> thenBranch;
+        std::vector<Statement *> elseBranch;
+
+        If(Expression *condition, std::vector<Statement *> thenBranch, std::vector<Statement *> elseBranch)
+            : Statement(RULE_IF), condition(condition), thenBranch(thenBranch), elseBranch(elseBranch) {};
         unsigned int compile() override;
 };
 

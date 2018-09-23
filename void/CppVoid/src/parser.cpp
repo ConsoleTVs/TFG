@@ -51,7 +51,7 @@ static bool match(TokenType token)
     return false;
 }
 
-static bool matchMany(std::vector<TokenType> tokens)
+static bool matchAny(std::vector<TokenType> tokens)
 {
     for (auto token : tokens) {
         if (CHECK(token)) {
@@ -80,6 +80,7 @@ std::string toString(Token token)
 }
 
 static Expression *expression();
+static Statement *statement();
 
 static bool isFunction()
 {
@@ -171,7 +172,7 @@ static Expression *call()
 
 static Expression *unary()
 {
-    if (matchMany(std::vector<TokenType>({ TOKEN_BANG, TOKEN_MINUS }))) {
+    if (matchAny(std::vector<TokenType>({ TOKEN_BANG, TOKEN_MINUS }))) {
         auto op = PREVIOUS();
         return new Unary(op, unary());
     }
@@ -182,7 +183,7 @@ static Expression *unary()
 static Expression *mulDivMod()
 {
     auto result = unary();
-    while (matchMany(std::vector<TokenType>({ TOKEN_SLASH, TOKEN_STAR, TOKEN_PERCENT }))) {
+    while (matchAny(std::vector<TokenType>({ TOKEN_SLASH, TOKEN_STAR, TOKEN_PERCENT }))) {
         auto op = PREVIOUS();
         result = new Binary(result, op, unary());
     }
@@ -193,7 +194,7 @@ static Expression *mulDivMod()
 static Expression *addition()
 {
     auto result = mulDivMod();
-    while (matchMany(std::vector<TokenType>({ TOKEN_MINUS, TOKEN_PLUS }))) {
+    while (matchAny(std::vector<TokenType>({ TOKEN_MINUS, TOKEN_PLUS }))) {
         auto op = PREVIOUS();
         result = new Binary(result, op, mulDivMod());
     }
@@ -204,7 +205,7 @@ static Expression *addition()
 static Expression *comparison()
 {
     auto result = addition();
-    while (matchMany(std::vector<TokenType>({ TOKEN_HIGHER, TOKEN_HIGHER_EQUAL, TOKEN_LOWER, TOKEN_LOWER_EQUAL }))) {
+    while (matchAny(std::vector<TokenType>({ TOKEN_HIGHER, TOKEN_HIGHER_EQUAL, TOKEN_LOWER, TOKEN_LOWER_EQUAL }))) {
         auto op = PREVIOUS();
         result = new Binary(result, op, addition());
     }
@@ -215,7 +216,7 @@ static Expression *comparison()
 static Expression *equality()
 {
     auto result = comparison();
-    while (matchMany(std::vector<TokenType>({ TOKEN_BANG_EQUAL, TOKEN_EQUAL_EQUAL }))) {
+    while (matchAny(std::vector<TokenType>({ TOKEN_BANG_EQUAL, TOKEN_EQUAL_EQUAL }))) {
         auto op = PREVIOUS();
         result = new Binary(result, op, comparison());
     }
@@ -271,7 +272,7 @@ static Statement *expressionStatement()
     auto expr = expression();
     printf("BEFORE: ");
     debug_token(CURRENT());
-    if (!matchMany(std::vector<TokenType>({ TOKEN_NEW_LINE, TOKEN_EOF }))) {
+    if (!matchAny(std::vector<TokenType>({ TOKEN_NEW_LINE, TOKEN_EOF }))) {
         error("Expected a new line or EOF after expression statement");
     }
     printf("AFTER: ");
@@ -279,8 +280,35 @@ static Statement *expressionStatement()
     return new ExpressionStatement(expr);
 }
 
+static Statement *ifStatement()
+{
+    consume(TOKEN_LEFT_PAREN, "Expected a '(' after 'if'");
+    Expression *condition = expression();
+    consume(TOKEN_RIGHT_PAREN, "Expected a ')' after 'if' condition");
+    if (match(TOKEN_RIGHT_ARROW)) {
+        // It's a simple if statement that returns the element
+        // return
+    } else if (match(TOKEN_BIG_RIGHT_ARROW)) {
+        consume(TOKEN_LEFT_BRACE, "Expected a '{' after the '=>'");
+        consume(TOKEN_NEW_LINE, "Expected a new line after the '{'");
+        std::vector<Statement *> thenBranch;
+        while (!CHECK(TOKEN_RIGHT_BRACE) && !IS_AT_END()) {
+            thenBranch.push_back(statement());
+        }
+        consume(TOKEN_RIGHT_BRACE, "Unterminated block. Expected '}'");
+        if (!matchAny(std::vector<TokenType>({ TOKEN_NEW_LINE, TOKEN_EOF }))) {
+            error("Expected a new line after the '}'", parser->current->line);
+        }
+
+        return new If(condition, thenBranch, std::vector<Statement *>({}));
+    }
+}
+
 static Statement *statement()
 {
+    if (match(TOKEN_IF)) {
+        return ifStatement();
+    }
     return expressionStatement();
 }
 

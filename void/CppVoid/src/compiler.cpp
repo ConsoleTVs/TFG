@@ -31,6 +31,7 @@ static std::vector<std::string> RuleNames = {
     "RULE_LOGICAL",
     "RULE_CALL",
     "RULE_ACCESS",
+    "RULE_IF",
 };
 
 void compile(const char *source)
@@ -199,4 +200,26 @@ unsigned int Call::compile()
 unsigned int Access::compile()
 {
     return 0;
+}
+
+unsigned int If::compile()
+{
+    unsigned int instructions = 0;
+
+    if (this->elseBranch.size() == 0) {
+        instructions = this->condition->compile() + 2; // +2 of the OP_BRANCH_FALSE and CONSTANT
+
+        addOpCode(OP_BRANCH_FALSE, this->line);
+        unsigned int constantIndex = addConstant(createValue(0.0)), afterCondition = 0;
+        addOpCode(constantIndex, this->line);
+
+        for (auto stmt : this->thenBranch) {
+            afterCondition += stmt->compile();
+        }
+
+        modifyConstant(constantIndex, createValue((double) (afterCondition + 1)));
+        instructions += afterCondition;
+    }
+
+    return instructions;
 }

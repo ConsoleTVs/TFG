@@ -16,7 +16,7 @@ void debug_program()
     printf("OPCODES: (size: %llu)\n",  program->code.size());
     for (unsigned long long i = 0; i < program->code.size(); i++) {
         auto opcode = program->code.at(i);
-        if (opcode == OP_CONSTANT || opcode == OP_LOAD) {
+        if (opcode == OP_CONSTANT || opcode == OP_LOAD || opcode == OP_BRANCH_FALSE || opcode == OP_BRANCH_TRUE) {
             // It's a constant load
             debug_opcode(program->code.at(i++));
             printf(" ");
@@ -58,4 +58,9 @@ int addConstant(Value value)
     program->constants.push_back(value);
 
     return program->constants.size() - 1;
+}
+
+void modifyConstant(unsigned int index, Value value)
+{
+    program->constants[index] = value;
 }

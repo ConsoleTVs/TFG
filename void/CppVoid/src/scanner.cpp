@@ -159,7 +159,11 @@ std::vector<Token> *scan(const char *source)
             case '+': { ADD_TOKEN(TOKEN_PLUS); break; }
             case '/': { ADD_TOKEN(TOKEN_SLASH); break; }
             case '*': { ADD_TOKEN(TOKEN_STAR); break; }
-            case '=': { ADD_TOKEN(match('=') ? TOKEN_EQUAL_EQUAL : TOKEN_EQUAL); break; }
+            case '=': {
+                if (match('=')) { ADD_TOKEN(TOKEN_EQUAL_EQUAL); break; }
+                else if (match('>')) { ADD_TOKEN(TOKEN_BIG_RIGHT_ARROW); break; }
+                else { ADD_TOKEN(TOKEN_EQUAL); break; }
+            }
             case '"': { ADD_TOKEN(is_string()); break; }
             case '<': {
                 if (match('-')) { ADD_TOKEN(TOKEN_LEFT_ARROW); break; }

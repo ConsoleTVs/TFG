@@ -26,5 +26,6 @@ void debug_program();
 void resetProgram();
 void addOpCode(uint8_t opcode, const unsigned int line);
 int addConstant(Value value);
+void modifyConstant(unsigned int index, Value value);
 
 #endif

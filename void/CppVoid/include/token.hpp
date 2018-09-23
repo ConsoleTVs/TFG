@@ -56,7 +56,8 @@ typedef enum : uint8_t {
     TOKEN_EOF, // \0
     TOKEN_PERCENT, // %
     TOKEN_LEFT_SQUARE, // [
-    TOKEN_RIGHT_SQUARE // ]
+    TOKEN_RIGHT_SQUARE, // ]
+    TOKEN_BIG_RIGHT_ARROW // =>
 } TokenType;
 
 typedef struct {
