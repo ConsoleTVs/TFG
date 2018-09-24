@@ -13,7 +13,7 @@ Program *program = new Program;
 
 void debug_program()
 {
-    printf("OPCODES: (size: %llu)\n",  program->code.size());
+    printf("OPCODES: (size: %zu)\n",  program->code.size());
     for (unsigned long long i = 0; i < program->code.size(); i++) {
         auto opcode = program->code.at(i);
         if (
@@ -35,12 +35,12 @@ void debug_program()
         printf("\n");
     }
 
-    printf("\nCONSTANTS: (size: %llu)\n", program->constants.size());
+    printf("\nCONSTANTS: (size: %zu)\n", program->constants.size());
     for (auto c : program->constants) {
         printValue(c);
         printf("\n");
     }
-    printf("\nLITERAL OPCODE NUMBERS: (size: %llu)\n", program->code.size());
+    printf("\nLITERAL OPCODE NUMBERS: (size: %zu)\n", program->code.size());
     for (auto c : program->code) {
         printf("%d ", c);
     }

@@ -38,7 +38,7 @@
 	LOAD "b"
 	PUSH 2.0
 	DIV
-	SUB
+	ADD
 	STORE "b"
 	LOAD "a"
 	PUSH 1.0

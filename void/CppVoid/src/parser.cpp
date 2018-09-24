@@ -67,14 +67,12 @@ static bool matchAny(std::vector<TokenType> tokens)
 
 std::string toString(Token token)
 {
-    printf("Trying to convert to string the token (Length: %d): ", token.length);
-    debug_token(token);
+    //printf("Trying to convert to string the token (Length: %d)... ", token.length);
     std::string s;
     for (unsigned int i = 0; i < token.length; i++) {
         s += *(token.start + i);
-        printf("Current: %s\n", s.c_str());
     }
-    printf("Finished: %s\n", s.c_str());
+    //printf("%s\n", s.c_str());
 
     return s;
 }
@@ -94,7 +92,7 @@ static Expression *function()
 
 static Expression *primary()
 {
-    debug_token(CURRENT());
+    // debug_token(CURRENT());
     if (match(TOKEN_FALSE)) return new Boolean(false);
     if (match(TOKEN_TRUE)) return new Boolean(true);
     if (match(TOKEN_NONE)) return new None();
@@ -127,8 +125,8 @@ static Expression *primary()
         consume(TOKEN_RIGHT_PAREN, "Expected ')' after a group expression");
         return new Group(value);
     }
-    printf("FAILED AT: ");
-    debug_token(CURRENT());
+    // printf("FAILED AT: ");
+    // debug_token(CURRENT());
     error("Expected an expression");
 }
 
@@ -270,13 +268,13 @@ static Expression *expression()
 static Statement *expressionStatement()
 {
     auto expr = expression();
-    printf("BEFORE: ");
-    debug_token(CURRENT());
+    // printf("BEFORE: ");
+    // debug_token(CURRENT());
     if (!matchAny(std::vector<TokenType>({ TOKEN_NEW_LINE, TOKEN_EOF }))) {
         error("Expected a new line or EOF after expression statement");
     }
-    printf("AFTER: ");
-    debug_token(CURRENT());
+    // printf("AFTER: ");
+    // debug_token(CURRENT());
     return new ExpressionStatement(expr);
 }
 
@@ -341,12 +339,12 @@ std::vector<Statement *> *parse(const char *source)
     auto code = new std::vector<Statement *>;
 
     while (!IS_AT_END()) {
-        printf("Looking for statement... Starting at ");
-        debug_token(CURRENT());
+        //printf("Looking for statement... Starting at ");
+        //debug_token(CURRENT());
         code->push_back(statement());
     }
 
-    debug_rules(*code);
+    // debug_rules(*code);
 
     success("Parsing completed");
 

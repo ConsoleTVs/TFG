@@ -47,7 +47,7 @@ void compile(const char *source)
 
     addOpCode(OP_EXIT, 0);
 
-    debug_program();
+    // debug_program();
 
     success("Compiling completed");
 }
