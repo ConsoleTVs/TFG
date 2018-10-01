@@ -139,11 +139,11 @@ unsigned int Group::compile()
     return this->expression->compile();
 }
 
-static unsigned int compileOperator(Token op, unsigned int line)
+static unsigned int compileOperator(Token op, unsigned int line, bool unary = false)
 {
     switch (op.type) {
         case TOKEN_PLUS: { addOpCode(OP_ADD, line); break; }
-        case TOKEN_MINUS: { addOpCode(OP_MINUS, line); break; }
+        case TOKEN_MINUS: { unary ? addOpCode(OP_MINUS, line) : addOpCode(OP_SUB, line); break; }
         case TOKEN_STAR: { addOpCode(OP_MUL, line); break; }
         case TOKEN_SLASH: { addOpCode(OP_DIV, line); break; }
         case TOKEN_BANG: { addOpCode(OP_NOT, line); break; }
@@ -162,7 +162,7 @@ static unsigned int compileOperator(Token op, unsigned int line)
 
 unsigned int Unary::compile()
 {
-    return this->right->compile() + compileOperator(this->op, this->line);
+    return this->right->compile() + compileOperator(this->op, this->line, true);
 }
 
 unsigned int Binary::compile()

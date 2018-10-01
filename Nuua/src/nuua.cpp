@@ -1,10 +1,10 @@
 /**
  * |---------------------------|
- * | Void Programming Language |
+ * | Nuua Programming Language |
  * |---------------------------|
  *
  * Copyright (c) 2018 Erik Campobadal <soc@erik.cat>
- * https://erik.cat
+ * https://nuua.io
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,25 +63,24 @@ static void prompt()
 
 static void file(const char *file)
 {
-    std::ifstream myfile (file);
-    if (myfile.is_open()) {
-        std::string content( (std::istreambuf_iterator<char>(myfile) ), (std::istreambuf_iterator<char>()));
+    std::ifstream programFile (file);
+    if (programFile.is_open()) {
+        std::string content( (std::istreambuf_iterator<char>(programFile) ), (std::istreambuf_iterator<char>()));
         interpret(content.c_str());
-    } else {
-        printf("Unable to open file '%s'\n", file);
+        exit(1);
     }
+
+    fprintf(stderr, "Unable to open file '%s'\n", file); exit(0);
 }
 
 int main(int argc, char *argv[])
 {
     initVM();
-    if (argc == 1) {
-        prompt();
-    } else if (argc == 2) {
-        file(argv[1]);
-    } else {
-        fprintf(stderr, "Invalid usage. nuua <path_to_file>\n");
-        exit(64); // Exit status for incorrect command usage.
+
+    switch (argc) {
+        case 1: { prompt(); break; }
+        case 2: { file(argv[1]); break; }
+        default: { fprintf(stderr, "Invalid usage. nuua <path_to_file>\n"); exit(64); } // Exit status for incorrect command usage.
     }
 
     /*z
