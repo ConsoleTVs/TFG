@@ -22,7 +22,7 @@
 
 static Parser *parser = new Parser;
 
-static Token advance()
+static Token advance() //! Possible removal due to unused function
 {
     if (!IS_AT_END()) {
         return NEXT();
