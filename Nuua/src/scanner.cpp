@@ -181,7 +181,7 @@ std::vector<Token> *scan(const char *source)
     }
     tokens->push_back(makeToken(TOKEN_EOF));
 
-    //debug_tokens(*tokens);
+    debug_tokens(*tokens);
     success("Scanning complete");
 
     return tokens;
