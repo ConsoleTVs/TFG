@@ -19,3 +19,7 @@ add3 = (a, b) {
 print -> (add -> (1, 1))
 print -> (add2 -> (1, 1))
 print -> (add3 -> (1, 1))
+
+p = Persona()
+p.age()
+p.age = () => ..
