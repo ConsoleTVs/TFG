@@ -23,6 +23,9 @@ void debug_program()
             || opcode == OP_BRANCH_FALSE
             || opcode == OP_BRANCH_TRUE
             || opcode == OP_RJUMP
+            || opcode == OP_ACCESS
+            || opcode == OP_LIST
+            || opcode == OP_STORE_ACCESS
         ) {
             // It's a constant load
             debug_opcode(program->code.at(i++));

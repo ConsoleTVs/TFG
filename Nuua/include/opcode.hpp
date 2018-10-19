@@ -47,6 +47,7 @@ typedef enum : uint8_t {
 
     // Others
     OP_LEN,
+    OP_PRINT,
     OP_EXIT
 } OpCode;
 

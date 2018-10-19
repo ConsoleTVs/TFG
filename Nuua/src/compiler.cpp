@@ -76,14 +76,12 @@ static std::string tempVariable()
 
 unsigned int Expression::compile()
 {
-    printf("Unknown expression to compile\n");
-    exit(0);
+    error("Unknown expression to compile");
 }
 
 unsigned int Statement::compile()
 {
-    printf("Unknown expression to compile\n");
-    exit(0);
+    error("Unknown expression to compile");
 }
 
 unsigned int ExpressionStatement::compile()
@@ -118,10 +116,11 @@ unsigned int Boolean::compile()
 unsigned int List::compile()
 {
     unsigned int instructions = 0;
-    for (auto value : this->value) {
-        instructions += value->compile();
+    for (int i = this->value.size() - 1; i >= 0; i--) {
+        instructions += this->value.at(i)->compile();
     }
     addOpCode(OP_LIST, this->line);
+    addOpCode(addConstant(createValue((double) this->value.size())), this->line);
 
     return instructions + 1;
 }
@@ -208,7 +207,11 @@ unsigned int Call::compile()
 
 unsigned int Access::compile()
 {
-    return 0;
+    unsigned int instructions = this->index->compile();
+    addOpCode(OP_ACCESS, this->line);
+    addOpCode(addConstant(createValue(this->name)), this->line);
+
+    return instructions + 2;
 }
 
 unsigned int If::compile() //! Still needs to finish what happens if the else branch is present!!

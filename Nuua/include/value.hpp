@@ -36,6 +36,9 @@ Value createValue(double a);
 Value createValue(bool a);
 Value createValue(std::string a);
 Value createValue(std::vector<Value> a);
+double numberCast(Value *a);
+std::string stringCast(Value *a);
+bool booleanCast(Value *a);
 void printValue(Value *a);
 
 #endif

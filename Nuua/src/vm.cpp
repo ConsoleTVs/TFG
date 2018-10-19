@@ -64,28 +64,31 @@
 #define DO_OP_RJUMP() { vm.pc += READ_INT() - 1; break; }
 
 /* Branch (RJUMP) if the top of the stack is true */
-#define DO_OP_BRANCH_TRUE() { int position = READ_INT() - 1; vm.pc += isTrue(POP()) ? position : 0; break; }
+#define DO_OP_BRANCH_TRUE() { int position = READ_INT() - 1; vm.pc += booleanCast(POP()) ? position : 0; break; }
 
 /* Branch (RJUMP) if the top of the stack is false */
-#define DO_OP_BRANCH_FALSE() { int position = READ_INT() - 1; vm.pc += isTrue(POP()) ? 0 : position; break; }
+#define DO_OP_BRANCH_FALSE() { int position = READ_INT() - 1; vm.pc += booleanCast(POP()) ? 0 : position; break; }
 
 /* Store value to a variable from the frame heap: variable = expression */
 #define DO_OP_STORE() { vm.topFrame->heap[READ_VARIABLE()] = *POP(); break; }
 
 /* Store to an accessed field: variable[index] = expression*/
-#define DO_OP_STORE_ACCESS() { auto v = POP(); (*vm.topFrame->heap[READ_VARIABLE()].lvalues)[POP()->nvalue] = *v; break; }
+#define DO_OP_STORE_ACCESS() { BINARY_POP(); (*vm.topFrame->heap[READ_VARIABLE()].lvalues)[b->nvalue] = *a; break; }
 
 /* Load a value from a variable from the frame heap */
 #define DO_OP_LOAD() { PUSH((*vm.topFrame).heap[READ_VARIABLE()]); break; }
 
 /* Push a new list value from N elements in the stack */
-#define DO_OP_LIST() { std::vector<Value> v; for (int pops = READ_INT(); pops > 0; pops--) v.push_back(*POP()); PUSH(createValue(v)); }
+#define DO_OP_LIST() { std::vector<Value> v; for (int pops = READ_INT(); pops > 0; pops--) v.push_back(*POP()); PUSH(createValue(v)); break; }
 
 /* Push a value from a list item: variable[index] */
-#define DO_OP_ACCESS() { PUSH((*vm.topFrame->heap[READ_VARIABLE()].lvalues)[POP()->nvalue]); break; }
+#define DO_OP_ACCESS() { auto v = vm.topFrame->heap[READ_VARIABLE()].lvalues; PUSH( v->at(POP()->nvalue) ); break; }
 
-/* pushes the value length of the top of the stack */
+/* Pushes the value length of the top of the stack */
 #define DO_OP_LEN() { PUSH(lenInst(POP())); break; }
+
+/* Pop and print the top of the stack value */
+#define DO_OP_PRINT() { printValue(POP()); break; }
 
 /* Exit and dump */
 #define DO_OP_EXIT() { for(auto i = vm.stack; i < vm.topStack; i++) { printValue(i); printf("\n"); }; return; }
@@ -148,6 +151,7 @@ void run()
             case OP_LIST: DO_OP_LIST()
             case OP_ACCESS: DO_OP_ACCESS()
             case OP_LEN: DO_OP_LEN()
+            case OP_PRINT: DO_OP_PRINT()
             case OP_EXIT: DO_OP_EXIT()
             default: DO_OP_UNKNOWN()
         }
