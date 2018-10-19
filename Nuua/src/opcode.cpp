@@ -72,6 +72,24 @@ static double numberCast(Value *a)
     }
 }
 
+static std::string stringCast(Value *a)
+{
+    switch (a->kind) {
+        case VALUE_NUMBER: { return std::to_string(a->nvalue); }
+        case VALUE_BOOLEAN: { return a->bvalue ? "true" : "false"; }
+        case VALUE_STRING: { return *a->svalue; }
+        case VALUE_LIST: {
+            std::string list = "[";
+            for (unsigned int i = 0; i < a->lvalues->size(); i++) {
+                list += stringCast(&a->lvalues->at(i));
+                if (i < a->lvalues->size() - 1) { list += ", "; }
+            }
+            return list + "]";
+        }
+        case VALUE_NONE: return "";
+    }
+}
+
 static bool booleanCast(Value *a)
 {
     return numberCast(a) != 0;
@@ -104,6 +122,7 @@ Value minusInst(Value *a)
         std::reverse(a->svalue->begin(), a->svalue->end());
         return createValue(*a->svalue);
     }
+
     return createValue(-numberCast(a));
 }
 
@@ -114,6 +133,10 @@ Value notInst(Value *a)
 
 Value addInst(Value *a, Value *b)
 {
+    if (a->kind == VALUE_STRING || b->kind == VALUE_STRING) {
+        return createValue(stringCast(a) + stringCast(b));
+    }
+
     return createValue(numberCast(a) + numberCast(b));
 }
 
@@ -136,13 +159,19 @@ Value divInst(Value *a, Value *b)
 
 Value eqInst(Value *a, Value *b)
 {
-    if (a->kind == VALUE_STRING && b->kind == VALUE_STRING) return createValue(*a->svalue == *b->svalue);
+    if (a->kind == VALUE_STRING && b->kind == VALUE_STRING) {
+        return createValue(*a->svalue == *b->svalue);
+    }
+
     return createValue(numberCast(a) == numberCast(b));
 }
 
 Value neqInst(Value *a, Value *b)
 {
-    if (a->kind == VALUE_STRING && b->kind == VALUE_STRING) return createValue(*a->svalue != *b->svalue);
+    if (a->kind == VALUE_STRING && b->kind == VALUE_STRING) {
+        return createValue(*a->svalue != *b->svalue);
+    }
+
     return createValue(numberCast(a) != numberCast(b));
 }
 

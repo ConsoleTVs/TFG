@@ -11,7 +11,6 @@
 #include "../include/logger.hpp"
 #include <string.h>
 #include <unordered_map>
-#include <type_traits>
 
 #define ADD_TOKEN(token) (tokens->push_back(makeToken(token)))
 #define TOK_LENGTH() ((int) (scanner->current - scanner->start))
