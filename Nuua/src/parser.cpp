@@ -364,12 +364,12 @@ std::vector<Statement *> *parse(const char *source)
     auto code = new std::vector<Statement *>;
 
     while (!IS_AT_END()) {
-        //printf("Looking for statement... Starting at ");
+        // printf("Looking for statement... Starting at ");
         //debug_token(CURRENT());
         code->push_back(statement());
     }
 
-    // debug_rules(*code);
+    debug_rules(*code);
 
     success("Parsing completed");
 
