@@ -43,6 +43,7 @@ typedef enum : uint8_t {
 
     // Lists and dictionaries
     OP_LIST,
+    OP_DICTIONARY,
     OP_ACCESS,
 
     // Others

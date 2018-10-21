@@ -53,6 +53,20 @@ Value createValue(std::vector<Value> a)
     return value;
 }
 
+Value createValue(std::unordered_map<std::string, Value> a, std::vector<std::string> b)
+{
+    Value value;
+    value.kind = VALUE_DICTIONARY;
+
+    auto dictionary = new ValueDictionary;
+    dictionary->values = new std::unordered_map<std::string, Value>(a);
+    dictionary->key_order = new std::vector<std::string>(b);
+
+    value.dvalues = dictionary;
+
+    return value;
+}
+
 double numberCast(Value *a)
 {
     switch (a->kind) {
@@ -60,8 +74,20 @@ double numberCast(Value *a)
         case VALUE_BOOLEAN: { return a->bvalue ? 1.0 : 0.0; }
         case VALUE_STRING: { return (double) a->svalue->length(); }
         case VALUE_LIST: { return (double) a->lvalues->size(); }
+        case VALUE_DICTIONARY: { return (double) a->dvalues->values->size(); }
         case VALUE_NONE: { return 0.0; }
     }
+}
+
+std::string valueRepresentation(Value *a)
+{
+    std::string result = stringCast(a);
+
+    if (a->kind == VALUE_STRING) {
+
+    }
+
+    return result;
 }
 
 std::string stringCast(Value *a)
@@ -72,13 +98,26 @@ std::string stringCast(Value *a)
         case VALUE_STRING: { return *a->svalue; }
         case VALUE_LIST: {
             std::string list = "[";
-            for (unsigned int i = 0; i < a->lvalues->size(); i++) {
-                list += stringCast(&a->lvalues->at(i));
-                if (i < a->lvalues->size() - 1) { list += ", "; }
+            if (a->lvalues->size() > 0) {
+                for (auto element : *a->lvalues) {
+                    list += (element.kind == VALUE_STRING ? '\'' + stringCast(&element) + '\'' : stringCast(&element)) + ", ";
+                }
+                list.pop_back(); list.pop_back(); // Pop the space and the comma
             }
             return list + "]";
         }
-        case VALUE_NONE: return "none";
+        case VALUE_DICTIONARY: {
+            std::string dictionary = "{";
+            if (a->dvalues->values->size() > 0) {
+                for (auto element : *a->dvalues->key_order) {
+                    auto value = a->dvalues->values->at(element);
+                    dictionary += element + ": " + (value.kind == VALUE_STRING ? '\'' + stringCast(&value) + '\'' : stringCast(&value)) + ", ";
+                }
+                dictionary.pop_back(); dictionary.pop_back(); // Pop the space and the comma
+            }
+            return dictionary + "}";
+        }
+        case VALUE_NONE: { return "none"; }
     }
 }
 

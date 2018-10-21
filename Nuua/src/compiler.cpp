@@ -22,6 +22,7 @@ static std::vector<std::string> RuleNames = {
     "RULE_STRING",
     "RULE_BOOLEAN",
     "RULE_LIST",
+    "RULE_DICTIONARY",
     "RULE_NONE",
     "RULE_GROUP",
     "RULE_UNARY",
@@ -120,6 +121,22 @@ unsigned int List::compile()
         instructions += this->value.at(i)->compile();
     }
     addOpCode(OP_LIST, this->line);
+    addOpCode(addConstant(createValue((double) this->value.size())), this->line);
+
+    return instructions + 1;
+}
+
+unsigned int Dictionary::compile()
+{
+    unsigned int instructions = 0;
+
+    for (int i = this->key_order.size() - 1; i >= 0; i--) {
+        addOpCode(OP_CONSTANT, this->line);
+        addOpCode(addConstant(createValue(this->key_order[i])), this->line);
+        instructions += this->value.at(this->key_order[i])->compile();
+    }
+
+    addOpCode(OP_DICTIONARY, this->line);
     addOpCode(addConstant(createValue((double) this->value.size())), this->line);
 
     return instructions + 1;

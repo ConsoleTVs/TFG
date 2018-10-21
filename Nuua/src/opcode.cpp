@@ -42,6 +42,7 @@ static std::string OpCodeNames[155] = {
 
     // Lists and dictionaries
     "OP_LIST",
+    "OP_DICTIONARY",
     "OP_ACCESS",
 
     // Others

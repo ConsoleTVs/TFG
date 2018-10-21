@@ -14,6 +14,7 @@
 #include "token.hpp"
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 typedef enum {
     RULE_EXPRESSION,
@@ -23,6 +24,7 @@ typedef enum {
     RULE_STRING,
     RULE_BOOLEAN,
     RULE_LIST,
+    RULE_DICTIONARY,
     RULE_NONE,
     RULE_GROUP,
     RULE_UNARY,
@@ -106,6 +108,17 @@ class List : public Expression
 
         List(std::vector<Expression *> value)
             : Expression(RULE_LIST), value(value) {};
+        unsigned int compile() override;
+};
+
+class Dictionary : public Expression
+{
+    public:
+        std::unordered_map<std::string, Expression *> value;
+        std::vector<std::string> key_order;
+
+        Dictionary(std::unordered_map<std::string, Expression *> value, std::vector<std::string> key_order)
+            : Expression(RULE_DICTIONARY), value(value), key_order(key_order) {};
         unsigned int compile() override;
 };
 

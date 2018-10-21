@@ -40,6 +40,10 @@ static const std::unordered_map<std::string, TokenType> reservedWords = {
     { "unroll", TOKEN_UNROLL }
 };
 
+static const std::vector<char> escapedChars = {
+    '\\', '\'', '"', 'n', 't', 'r', 'b', 'f', 'v', '0'
+};
+
 static const std::string token_error()
 {
     std::string e = "Unexpected token '";
@@ -75,10 +79,11 @@ static bool match(const char c)
     return true;
 }
 
-static TokenType isString()
+static TokenType isString(bool simple)
 {
-    while (PEEK() != '"' && !IS_AT_END()) {
+    while (PEEK() != (simple ? '\'' : '"') && !IS_AT_END()) {
         if (PEEK() == '\n') scanner->line++;
+        else if (PEEK() == '\\') { NEXT() };
         NEXT();
     }
 
@@ -145,6 +150,7 @@ std::vector<Token> *scan(const char *source)
             case ']': { ADD_TOKEN(TOKEN_RIGHT_SQUARE); break; }
             case ',': { ADD_TOKEN(TOKEN_COMMA); break; }
             case '.': { ADD_TOKEN(TOKEN_DOT); break; }
+            case ':': { ADD_TOKEN(TOKEN_COLON); break; }
             case '-': {
                 if (match('>')) {
                     if (match('>')) {
@@ -165,7 +171,8 @@ std::vector<Token> *scan(const char *source)
                 else if (match('>')) { ADD_TOKEN(TOKEN_BIG_RIGHT_ARROW); break; }
                 else { ADD_TOKEN(TOKEN_EQUAL); break; }
             }
-            case '"': { ADD_TOKEN(isString()); break; }
+            case '"': { ADD_TOKEN(isString(false)); break; }
+            case '\'': { ADD_TOKEN(isString(true)); break; }
             case '<': {
                 if (match('-')) { ADD_TOKEN(TOKEN_LEFT_ARROW); break; }
                 ADD_TOKEN(match('=') ? TOKEN_LOWER_EQUAL : TOKEN_LOWER); break;

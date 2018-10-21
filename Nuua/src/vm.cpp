@@ -20,6 +20,7 @@
 #define READ_INT() ((int) (READ_CONSTANT().nvalue))
 #define READ_VARIABLE() (*(READ_CONSTANT().svalue))
 #define BINARY_POP() Value *b = POP(); Value *a = POP()
+#define CURRENT_LINE() vm.program->lines[(int) (vm.pc - &vm.program->code[0])]
 
 /* Push a constant into the stack */
 #define DO_OP_CONSTANT() { PUSH(READ_CONSTANT()); break; }
@@ -72,8 +73,8 @@
 /* Store value to a variable from the frame heap: variable = expression */
 #define DO_OP_STORE() { vm.topFrame->heap[READ_VARIABLE()] = *POP(); break; }
 
-/* Store to an accessed field: variable[index] = expression*/
-#define DO_OP_STORE_ACCESS() { BINARY_POP(); (*vm.topFrame->heap[READ_VARIABLE()].lvalues)[b->nvalue] = *a; break; }
+/* Store to an accessed field: variable[expression] = expression*/
+#define DO_OP_STORE_ACCESS() { BINARY_POP(); vm.topFrame->heap[READ_VARIABLE()].lvalues->at(b->nvalue) = *a; break; }
 
 /* Load a value from a variable from the frame heap */
 #define DO_OP_LOAD() { PUSH((*vm.topFrame).heap[READ_VARIABLE()]); break; }
@@ -81,8 +82,18 @@
 /* Push a new list value from N elements in the stack */
 #define DO_OP_LIST() { std::vector<Value> v; for (int pops = READ_INT(); pops > 0; pops--) v.push_back(*POP()); PUSH(createValue(v)); break; }
 
-/* Push a value from a list item: variable[index] */
-#define DO_OP_ACCESS() { auto v = vm.topFrame->heap[READ_VARIABLE()].lvalues; PUSH( v->at(POP()->nvalue) ); break; }
+/* Push a new dictionary value from N*2 (key + value) elements in the stack */
+#define DO_OP_DICTIONARY() { std::unordered_map<std::string, Value> v; std::vector<std::string> ko; \
+    for (int e = READ_INT(); e > 0; e--) { auto val = *POP(); auto n = *POP()->svalue; v[n] = val; ko.push_back(n); } PUSH(createValue(v, ko)); break; }
+
+/* Push a value from a list item: variable[expression] */
+#define DO_OP_ACCESS() { auto var = vm.topFrame->heap[READ_VARIABLE()]; auto index = POP(); \
+    if (var.kind == VALUE_LIST && index->kind == VALUE_NUMBER) { PUSH(var.lvalues->at(index->nvalue)); } \
+    else if (var.kind == VALUE_DICTIONARY && index->kind == VALUE_STRING) { PUSH(var.dvalues->values->at(*index->svalue)); } \
+    else { \
+        if (var.kind == VALUE_DICTIONARY) error("Invalid access instruction. You need to use a string as a key", CURRENT_LINE()); \
+        else error("Invalid access instruction. You need to use a number as a key", CURRENT_LINE()); \
+    } break; }
 
 /* Pushes the value length of the top of the stack */
 #define DO_OP_LEN() { PUSH(lenInst(POP())); break; }
@@ -94,7 +105,7 @@
 #define DO_OP_EXIT() { for(auto i = vm.stack; i < vm.topStack; i++) { printValue(i); printf("\n"); }; return; }
 
 /* Unknown OP code found */
-#define DO_OP_UNKNOWN() { printf("Unknown instruction at line %u\n", vm.program->lines[(int) (vm.pc - &vm.program->code[0])]); break; }
+#define DO_OP_UNKNOWN() { error("Unknown instruction at line", CURRENT_LINE()); break; }
 
 static VM vm;
 
@@ -107,27 +118,10 @@ void initVM()
     resetFrames();
 }
 
-/* Typical push and pop instructions. Replaced by the macros. */
-// void push(Value value) { *vm.topStack = value; vm.topStack++; }
-// Value* pop() { return --vm.topStack; }
-
 void run()
 {
     for (uint8_t instruction;;) {
         instruction = READ_INSTRUCTION();
-        #ifdef DEBUG
-            printf(
-                "Inst: %d - Offset: %d - Line: %u\n",
-                instruction,
-                (int)(vm.pc - &vm.program->code[0]),
-                vm.program->lines[(int)(vm.pc - &vm.program->code[0])]
-            );
-            printf("Stack: -> ");
-            for (Value* slot = vm.stack; slot < vm.topStack; slot++) {
-                printf("[ "); printValue(*slot); printf(" ]");
-            }
-            printf(" <- \n");
-        #endif
         switch (instruction) {
             case OP_CONSTANT: DO_OP_CONSTANT()
             case OP_MINUS: DO_OP_MINUS()
@@ -149,6 +143,7 @@ void run()
             case OP_STORE_ACCESS: DO_OP_STORE_ACCESS()
             case OP_LOAD: DO_OP_LOAD()
             case OP_LIST: DO_OP_LIST()
+            case OP_DICTIONARY: DO_OP_DICTIONARY()
             case OP_ACCESS: DO_OP_ACCESS()
             case OP_LEN: DO_OP_LEN()
             case OP_PRINT: DO_OP_PRINT()

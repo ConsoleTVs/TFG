@@ -50,7 +50,7 @@ typedef enum : uint8_t {
     TOKEN_FOR, // for
     TOKEN_IF, // if
     TOKEN_NONE, // none
-    // TOKEN_RETURN, // Not really needed
+    // TOKEN_RETURN,
     // TOKEN_SUPER,
     TOKEN_SELF, // self
     TOKEN_EOF, // \0
@@ -58,7 +58,8 @@ typedef enum : uint8_t {
     TOKEN_LEFT_SQUARE, // [
     TOKEN_RIGHT_SQUARE, // ]
     TOKEN_BIG_RIGHT_ARROW, // =>
-    TOKEN_UNROLL // times
+    TOKEN_COLON, // :
+    TOKEN_UNROLL // unroll
 } TokenType;
 
 typedef struct {

@@ -11,7 +11,6 @@
 #include "../include/parser.hpp"
 #include "../include/logger.hpp"
 #include "../include/scanner.hpp"
-#include <typeinfo>
 
 #define CURRENT() (*(parser->current))
 #define PREVIOUS() (*(parser->current - 1))
@@ -42,9 +41,7 @@ static Token consume(TokenType type, const char* message) {
 static bool match(TokenType token)
 {
     if (CHECK(token)) {
-        if (token != TOKEN_EOF) {
-            NEXT();
-        }
+        if (token != TOKEN_EOF) NEXT();
         return true;
     }
 
@@ -67,13 +64,8 @@ static bool matchAny(std::vector<TokenType> tokens)
 
 std::string toString(Token token)
 {
-    //printf("Trying to convert to string the token (Length: %d)... ", token.length);
     std::string s;
-    for (unsigned int i = 0; i < token.length; i++) {
-        s += *(token.start + i);
-    }
-    //printf("%s\n", s.c_str());
-
+    for (unsigned int i = 0; i < token.length; i++) s += *(token.start + i);
     return s;
 }
 
@@ -90,6 +82,48 @@ static Expression *function()
 
 }
 
+static Expression *list()
+{
+    std::vector<Expression *> values;
+    if (match(TOKEN_RIGHT_SQUARE)) return new List(values);
+    for (;;) {
+        if (IS_AT_END()) {
+            error("Unfinished list, Expecting ']' after the last list element.", parser->current->line);
+        }
+        values.push_back(expression());
+        if (match(TOKEN_RIGHT_SQUARE)) {
+            break;
+        }
+        consume(TOKEN_COMMA, "Expected ',' after list element");
+    }
+
+    return new List(values);
+}
+
+static Expression *dictionary()
+{
+    std::unordered_map<std::string, Expression *> values;
+    std::vector<std::string> keys;
+    if (match(TOKEN_RIGHT_BRACE)) return new Dictionary(values, keys);
+    for (;;) {
+        if (IS_AT_END()) error("Unfinished dictionary, Expecting '}' after the last dictionary element.", parser->current->line);
+        auto key = expression();
+        if (key->type != RULE_VARIABLE) error("Expected an identifier as a key", parser->current->line);
+        consume(TOKEN_COLON, "Expected ':' after dictionary key");
+        auto name = static_cast<Variable *>(key)->name;
+        values[name] = expression();
+        keys.push_back(name);
+        if (match(TOKEN_RIGHT_BRACE)) break;
+        consume(TOKEN_COMMA, "Expected ',' after dictionary element");
+    }
+    printf("-\n");
+    for (auto a : values) {
+        printf("%s\n", a.first.c_str());
+    }
+    printf("-\n");
+    return new Dictionary(values, keys);
+}
+
 static Expression *primary()
 {
     // debug_token(CURRENT());
@@ -99,30 +133,13 @@ static Expression *primary()
     if (match(TOKEN_NUMBER)) return new Number(std::stof(toString(PREVIOUS())));
     if (match(TOKEN_STRING)) return new String(toString(PREVIOUS()));
     if (match(TOKEN_IDENTIFIER)) return new Variable(toString(PREVIOUS()));
-    if (match(TOKEN_LEFT_SQUARE)) {
-        std::vector<Expression *> values;
-        if (match(TOKEN_RIGHT_SQUARE)) {
-            return new List(values);
-        }
-        for (;;) {
-            if (IS_AT_END()) {
-                error("Unfinished list, Expecting ']' after the last list element.");
-            }
-            values.push_back(expression());
-            if (match(TOKEN_RIGHT_SQUARE)) {
-                break;
-            }
-            consume(TOKEN_COMMA, "Expected ',' after list element");
-        }
-
-        return new List(values);
-    }
+    if (match(TOKEN_LEFT_SQUARE)) return list();
+    if (match(TOKEN_LEFT_BRACE)) return dictionary();
     if (match(TOKEN_LEFT_PAREN)) {
-        if (isFunction()) {
-            return function();
-        }
+        if (isFunction()) return function();
         auto value = expression();
         consume(TOKEN_RIGHT_PAREN, "Expected ')' after a group expression");
+
         return new Group(value);
     }
     // printf("FAILED AT: ");

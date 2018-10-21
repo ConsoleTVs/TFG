@@ -25,6 +25,7 @@ void debug_program()
             || opcode == OP_RJUMP
             || opcode == OP_ACCESS
             || opcode == OP_LIST
+            || opcode == OP_DICTIONARY
             || opcode == OP_STORE_ACCESS
         ) {
             // It's a constant load
