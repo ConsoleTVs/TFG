@@ -40,10 +40,6 @@ static const std::unordered_map<std::string, TokenType> reservedWords = {
     { "unroll", TOKEN_UNROLL }
 };
 
-static const std::vector<char> escapedChars = {
-    '\\', '\'', '"', 'n', 't', 'r', 'b', 'f', 'v', '0'
-};
-
 static const std::string token_error()
 {
     std::string e = "Unexpected token '";
@@ -83,7 +79,7 @@ static TokenType isString(bool simple)
 {
     while (PEEK() != (simple ? '\'' : '"') && !IS_AT_END()) {
         if (PEEK() == '\n') scanner->line++;
-        else if (PEEK() == '\\') { NEXT() };
+        else if (PEEK() == '\\') { NEXT(); }
         NEXT();
     }
 

@@ -21,6 +21,19 @@
 
 static Parser *parser = new Parser;
 
+static const std::unordered_map<char, char> escapedChars = {
+    { '\\', '\\' },
+    { '\'', '\'' },
+    { '"', '"' },
+    { 'n', '\n' },
+    { 't', '\t'},
+    { 'r', '\r'},
+    { 'b', '\b'},
+    { 'f', '\f'},
+    { 'v', '\v'},
+    { '0', '\0'}
+};
+
 static Token advance() //! Possible removal due to unused function
 {
     if (!IS_AT_END()) {
@@ -31,9 +44,7 @@ static Token advance() //! Possible removal due to unused function
 }
 
 static Token consume(TokenType type, const char* message) {
-    if (parser->current->type == type) {
-        return NEXT();
-    }
+    if (parser->current->type == type) return NEXT();
 
     error(std::string(message), parser->current->line);
 }
@@ -52,9 +63,7 @@ static bool matchAny(std::vector<TokenType> tokens)
 {
     for (auto token : tokens) {
         if (CHECK(token)) {
-            if (token != TOKEN_EOF) {
-                NEXT();
-            }
+            if (token != TOKEN_EOF) NEXT();
             return true;
         }
     }
@@ -65,7 +74,18 @@ static bool matchAny(std::vector<TokenType> tokens)
 std::string toString(Token token)
 {
     std::string s;
-    for (unsigned int i = 0; i < token.length; i++) s += *(token.start + i);
+    for (unsigned int i = 0; i < token.length; i++) {
+        auto c = token.start + i;
+        s += *c;
+        if (*c == '\\') {
+            auto nc = *(c + 1);
+            if (escapedChars.find(nc) != escapedChars.end()) {
+                s.pop_back();
+                s += escapedChars.at(nc);
+            }
+        }
+    }
+
     return s;
 }
 
@@ -91,9 +111,7 @@ static Expression *list()
             error("Unfinished list, Expecting ']' after the last list element.", parser->current->line);
         }
         values.push_back(expression());
-        if (match(TOKEN_RIGHT_SQUARE)) {
-            break;
-        }
+        if (match(TOKEN_RIGHT_SQUARE)) break;
         consume(TOKEN_COMMA, "Expected ',' after list element");
     }
 
@@ -116,11 +134,13 @@ static Expression *dictionary()
         if (match(TOKEN_RIGHT_BRACE)) break;
         consume(TOKEN_COMMA, "Expected ',' after dictionary element");
     }
+
+    /*
     printf("-\n");
-    for (auto a : values) {
-        printf("%s\n", a.first.c_str());
-    }
+    for (auto a : values) printf("%s\n", a.first.c_str());
     printf("-\n");
+    */
+
     return new Dictionary(values, keys);
 }
 
@@ -152,10 +172,9 @@ static Expression *finishCall(Expression *callee)
     std::vector<Expression *> arguments;
     if (!CHECK(TOKEN_RIGHT_PAREN)) {
         arguments.push_back(expression());
-        while (match(TOKEN_COMMA) && !IS_AT_END()) {
-            arguments.push_back(expression());
-        }
+        while (match(TOKEN_COMMA) && !IS_AT_END()) arguments.push_back(expression());
     }
+
     consume(TOKEN_RIGHT_PAREN, "Expected ')' after call arguments");
 
     return new Call(callee, arguments);
