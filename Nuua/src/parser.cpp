@@ -82,6 +82,7 @@ std::string toString(Token token)
             if (escapedChars.find(nc) != escapedChars.end()) {
                 s.pop_back();
                 s += escapedChars.at(nc);
+                i++; // Increment i to avoid char repetition
             }
         }
     }
