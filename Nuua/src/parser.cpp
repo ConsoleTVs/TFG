@@ -34,15 +34,6 @@ static const std::unordered_map<char, char> escapedChars = {
     { '0', '\0'}
 };
 
-static Token advance() //! Possible removal due to unused function
-{
-    if (!IS_AT_END()) {
-        return NEXT();
-    }
-
-    return *(parser->current);
-}
-
 static Token consume(TokenType type, const char* message) {
     if (parser->current->type == type) return NEXT();
 
