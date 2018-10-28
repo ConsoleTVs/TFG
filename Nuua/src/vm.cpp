@@ -13,8 +13,6 @@
 
 #define PUSH(value) *vm.topStack++ = (value) // *vm.topStack = (value); vm.topStack++
 #define POP() (--vm.topStack)
-
-/* Helpers defined for the operations performed by the virtual machine */
 #define READ_INSTRUCTION() (*vm.pc++)
 #define READ_CONSTANT() (vm.program->constants[READ_INSTRUCTION()])
 #define READ_INT() ((int) (READ_CONSTANT().nvalue))
@@ -261,3 +259,12 @@ void interpret(const char *source)
 
     success("Finished interpreting");
 }
+
+#undef PUSH
+#undef POP
+#undef READ_INSTRUCTION
+#undef READ_CONSTANT
+#undef READ_INT
+#undef READ_VARIABLE
+#undef BINARY_POP
+#undef CURRENT_LINE

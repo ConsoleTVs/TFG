@@ -18,7 +18,6 @@
 #define NEXT() (*(scanner->current++))
 #define PEEK() (*scanner->current)
 #define PEEK_ON(offset) (*(scanner->current + offset))
-// #define CHECK(c) (*(scanner->current + 1) == c)
 #define IS_DIGIT(character) (character >= '0' && character <= '9')
 #define IS_ALPHA(character) (character >= 'a' && character <= 'z' || character >= 'A' && character <= 'Z' || character == '_')
 #define IS_ALPHANUM(character) (IS_ALPHA(character) || IS_DIGIT(character))
