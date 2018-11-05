@@ -11,14 +11,14 @@
 #include "../include/compiler.hpp"
 #include "../include/logger.hpp"
 
-#define PUSH(value) *vm.topStack++ = (value) // *vm.topStack = (value); vm.topStack++
+#define PUSH(value) *vm.topStack++ = (value)
 #define POP() (--vm.topStack)
 #define READ_INSTRUCTION() (*vm.pc++)
 #define READ_CONSTANT() (vm.program->constants[READ_INSTRUCTION()])
 #define READ_INT() ((int) (READ_CONSTANT().nvalue))
 #define READ_VARIABLE() (*(READ_CONSTANT().svalue))
 #define BINARY_POP() Value *b = POP(); Value *a = POP()
-#define CURRENT_LINE() vm.program->lines[(int) (vm.pc - &vm.program->code[0])]
+#define CURRENT_LINE() vm.program->lines[(int) (vm.pc - &vm.program->code.front())]
 
 static VM vm;
 
